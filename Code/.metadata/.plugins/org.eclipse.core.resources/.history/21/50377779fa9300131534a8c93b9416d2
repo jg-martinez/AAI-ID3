@@ -1,0 +1,12 @@
+//import java.util.Scanner;
+
+
+public class Reader {
+
+	public static boolean checkExtension(String string) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+}

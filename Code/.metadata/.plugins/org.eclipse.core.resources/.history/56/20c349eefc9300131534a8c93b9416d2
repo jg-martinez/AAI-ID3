@@ -1,0 +1,12 @@
+//import java.util.Scanner;
+
+
+public class Reader {
+
+	public static boolean checkArffExtension(String string) {
+		// TODO Auto-generated method stub
+		return string.contains(".arff");
+	}
+
+
+}

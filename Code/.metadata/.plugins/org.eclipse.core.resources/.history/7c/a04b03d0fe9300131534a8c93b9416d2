@@ -1,0 +1,19 @@
+import java.util.Scanner;
+
+public class Reader {
+
+	public static boolean checkArffExtension(String string) {
+		return string.contains(".arff");
+	}
+
+	public static String readPathOfFile () {
+		Scanner path = new Scanner("Write path to file: ");
+		System.out.println("The path to file is: " + path);
+		path.close();
+		return path.toString();
+	}
+	
+	public static void main(String[] args) {
+		readPathOfFile();
+	}
+}

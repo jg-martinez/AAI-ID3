@@ -1,0 +1,23 @@
+import java.util.Scanner;
+
+public class Reader {
+
+	public static boolean checkArffExtension(String string) {
+		return string.contains(".arff");
+	}
+
+	public static String readPathOfFile () {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Write path to ARFF format file: ");
+		String path = sc.next();
+		System.out.println("The path to file is: " + path);
+		sc.close();
+		return path;
+	}
+	
+	public static void main(String[] args) {
+		if (checkArffExtension(readPathOfFile()))
+			System.out.println("Tipo de fichero válido");
+		else System.out.println("Tipo de fichero inválido");
+	}
+}

@@ -1,0 +1,18 @@
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+
+public class ReaderTest {
+
+	@Test
+	public void testCheckExtension() {
+		assertEquals(true,Reader.checkArffExtension("peter.arff"));
+	}
+	
+	@Test
+	public void testReadPathOfFile(){
+		assertEquals("restaurant.arrf", Reader.readPathOfFile());
+	}
+
+}
