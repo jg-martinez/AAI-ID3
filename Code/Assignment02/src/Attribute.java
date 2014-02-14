@@ -4,12 +4,12 @@ import java.util.ArrayList;
 public class Attribute {
 	private String name;
 	private ArrayList<String> values;
-	private int entropy;
+	//private int entropy;
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
 		int index = 0;
-		int entropy = 0;
+		//int entropy = 0;
 		this.name = name;
 		this.values = new ArrayList<String>();
 		
