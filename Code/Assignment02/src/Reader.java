@@ -28,7 +28,9 @@ public class Reader {
 		String line = null;
 		try {
 			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
+				if(!line.startsWith("%") && !line.startsWith("@RELATION") && !line.isEmpty()){
+					System.out.println(line);
+				} 
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
