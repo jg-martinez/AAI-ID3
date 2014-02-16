@@ -67,9 +67,11 @@ public class Reader {
 			double p = 0;
 			double n = 0;
 			for(int j = 0; j < datas.size(); j++) {
-				if (datas.get(attributes.size()).equals("Yes"))
+				if (datas.get(attributes.size()).equals("Yes")){
 					p++;
-				else n++;
+				} else {
+					n++;
+				}
 			}
 			attributes.get(i).setEntropy(Attribute.mathEntropy(p, n));
 		}
@@ -79,6 +81,7 @@ public class Reader {
 		String path = readPathOfFile();		
 		if (checkArffExtension(path)){
 			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/restaurant.arff
+			calculateEntropyForRoot();
 			System.out.println(attributes.toString());
 			System.out.println(datas.toString());
 		} else System.out.println("File doesn't have a .arff extension");
