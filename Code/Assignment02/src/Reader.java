@@ -67,14 +67,22 @@ public class Reader {
 			double p = 0;
 			double n = 0;
 			for(int j = 0; j < datas.size(); j++) {
-				if (datas.get(attributes.size()).equals("Yes")){
+				if (datas.get(j).get(attributes.size()-1).equals("Yes")){
 					p++;
 				} else {
 					n++;
 				}
 			}
-			attributes.get(i).setEntropy(Attribute.mathEntropy(p, n));
+			attributes.get(i).setEntropy(mathEntropy(p, n));
 		}
+	}
+	
+	public static double mathEntropy(double p, double n) {
+		double total = p + n;
+		double result = 0;
+		if(p != 0 && n != 0)
+			result = -(p/total)*(Math.log(p/total)/Math.log(2))-n/total*(Math.log(n/total)/Math.log(2));
+		return result;
 	}
 	
 	public static void main(String[] args) {

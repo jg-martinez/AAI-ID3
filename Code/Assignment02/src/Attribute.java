@@ -24,10 +24,7 @@ public class Attribute {
 		}
 		
 		tempValue = (String) stringValues.subSequence(index, stringValues.length());		
-		this.values.add(tempValue);
-		
-		
-		
+		this.values.add(tempValue);		
 	}
 	
 	public String toString(){
@@ -36,14 +33,5 @@ public class Attribute {
 	
 	public void setEntropy(double value) {
 		this.entropy = value; 
-	}
-	
-	public static double mathEntropy(double p, double n) {
-		double total = p + n;
-		double result = 0;
-		if(p != 0 && n != 0)
-			result = -(p/total)*(Math.log(p/total)/Math.log(2))-n/total*(Math.log(n/total)/Math.log(2));
-		return result;
-	}
-	
+	}	
 }
