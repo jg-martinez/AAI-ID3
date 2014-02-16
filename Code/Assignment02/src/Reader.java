@@ -62,6 +62,19 @@ public class Reader {
 		} 
 	}
 	
+	public static void calculateEntropyForRoot() {
+		for(int i = 0; i < attributes.size(); i++) {
+			double p = 0;
+			double n = 0;
+			for(int j = 0; j < datas.size(); j++) {
+				if (datas.get(attributes.size()).equals("Yes"))
+					p++;
+				else n++;
+			}
+			attributes.get(i).setEntropy(Attribute.mathEntropy(p, n));
+		}
+	}
+	
 	public static void main(String[] args) {
 		String path = readPathOfFile();		
 		if (checkArffExtension(path)){

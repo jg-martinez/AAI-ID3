@@ -4,12 +4,12 @@ import java.util.ArrayList;
 public class Attribute {
 	private String name;
 	private ArrayList<String> values;
-	//private int entropy;
+	private double entropy;
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
 		int index = 0;
-		//int entropy = 0;
+		double entropy = 0;
 		this.name = name;
 		this.values = new ArrayList<String>();
 		
@@ -34,7 +34,11 @@ public class Attribute {
 		return this.name + this.values.toString();
 	}
 	
-	public static double calculateEntropy(double p, double n) {
+	public void setEntropy(double value) {
+		this.entropy = value; 
+	}
+	
+	public static double mathEntropy(double p, double n) {
 		double total = p + n;
 		double result = 0;
 		if(p != 0 && n != 0)
