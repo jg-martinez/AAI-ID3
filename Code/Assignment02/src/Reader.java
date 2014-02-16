@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Reader {
-
-	
+public class Reader {	
 	static ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+	static ArrayList<ArrayList<String>> datas = new ArrayList<ArrayList<String>>();
+	static boolean canReadData = false;
 	
 	public static boolean checkArffExtension(String string) {
 		return string.contains(".arff");
@@ -48,6 +48,16 @@ public class Reader {
 				name = (String) line.subSequence(line.indexOf(" ") + 1, line.indexOf(" ", line.indexOf(" ") + 1));
 				values = (String) line.subSequence(line.indexOf("{")+1, line.indexOf("}"));
 				attributes.add(new Attribute(name,values));
+			}			
+			if(canReadData){	
+				ArrayList<String> strList = new ArrayList<String>(); // for each line we create a new ArrayList of String
+				for(String subString:line.split(",")){
+					strList.add(subString);			    
+				}
+				datas.add(strList);
+			}
+			if(line.startsWith("@DATA")){
+				canReadData = true;
 			}
 		} 
 	}
@@ -55,8 +65,9 @@ public class Reader {
 	public static void main(String[] args) {
 		String path = readPathOfFile();		
 		if (checkArffExtension(path)){
-			readFile(path);
+			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/restaurant.arff
 			System.out.println(attributes.toString());
+			System.out.println(datas.toString());
 		} else System.out.println("File doesn't have a .arff extension");
 		}
 }
