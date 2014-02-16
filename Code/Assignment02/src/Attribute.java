@@ -6,6 +6,10 @@ public class Attribute {
 	private ArrayList<String> values;
 	private double entropy;
 	
+	private ArrayList<ArrayList<Attribute>> nextAttributes;
+	
+	
+	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
 		int index = 0;
@@ -34,4 +38,13 @@ public class Attribute {
 	public void setEntropy(double value) {
 		this.entropy = value; 
 	}	
+	
+	public double getEntropy(){
+		return this.entropy;
+	}
+	
+	public void createNextAttributes(){
+		this.nextAttributes = new ArrayList<ArrayList<Attribute>>();
+		
+	}
 }

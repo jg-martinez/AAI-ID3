@@ -41,7 +41,7 @@ public class Reader {
 	
 	public static void testLine(String line){
 		if(!line.startsWith("%") && !line.startsWith("@RELATION") && !line.isEmpty()){
-			System.out.println(line);
+			//System.out.println(line);
 			String name = null;
 			String values = null;
 			if(line.startsWith("@ATTRIBUTE")){						
@@ -75,6 +75,14 @@ public class Reader {
 			}
 			attributes.get(i).setEntropy(mathEntropy(p, n));
 		}
+		double entropyMax = -1;
+		int indexMax = -1;
+		for(int i= 0; i < attributes.size(); i++){
+			if(attributes.get(i).getEntropy() > entropyMax){
+				indexMax = i;
+			}
+		}
+		attributes.get(indexMax).createNextAttributes();
 	}
 	
 	public static double mathEntropy(double p, double n) {
