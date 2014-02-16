@@ -34,4 +34,12 @@ public class Attribute {
 		return this.name + this.values.toString();
 	}
 	
+	public static double calculateEntropy(double p, double n) {
+		double total = p + n;
+		double result = 0;
+		if(p != 0 && n != 0)
+			result = -(p/total)*(Math.log(p/total)/Math.log(2))-n/total*(Math.log(n/total)/Math.log(2));
+		return result;
+	}
+	
 }
