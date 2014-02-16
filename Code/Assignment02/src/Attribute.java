@@ -9,7 +9,7 @@ public class Attribute {
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
 		int index = 0;
-		double entropy = 0;
+		this.entropy = 0;
 		this.name = name;
 		this.values = new ArrayList<String>();
 		
@@ -31,7 +31,7 @@ public class Attribute {
 	}
 	
 	public String toString(){
-		return this.name + this.values.toString();
+		return this.name + this.values.toString() + this.entropy;
 	}
 	
 	public void setEntropy(double value) {
