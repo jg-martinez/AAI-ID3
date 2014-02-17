@@ -8,6 +8,7 @@ public class Attribute {
 	private double entropy;	
 	private int[] positive;
 	private int[] negative;
+	private double[] specificEntropy;
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
@@ -29,6 +30,10 @@ public class Attribute {
 		
 		tempValue = (String) stringValues.subSequence(index, stringValues.length());		
 		this.possibleValues.add(tempValue);	
+		
+		this.positive = new int[this.possibleValues.size()];
+		this.negative = new int[this.possibleValues.size()];
+		this.specificEntropy = new double[this.possibleValues.size()];
 	}
 	
 	public void calculateGain(ArrayList<Attribute> array){		
@@ -44,7 +49,8 @@ public class Attribute {
 					}
 				}
 			}
-		}
+			specificEntropy[i] = Reader.mathEntropy(positive[i], negative[i]);
+		}	
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -56,6 +62,7 @@ public class Attribute {
 		this.entropy = a.entropy;
 		this.positive = new int[this.possibleValues.size()];
 		this.negative = new int[this.possibleValues.size()];
+		this.specificEntropy = new double[this.possibleValues.size()];
 	}
 	
 	public String getName(){
