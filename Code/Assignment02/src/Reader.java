@@ -86,13 +86,13 @@ public class Reader {
 		double gainMax = -1;
 		int indexMax = -1;
 		for(int i= 0; i < attributes.size()-1; i++){ //looking for the max entropy
-			if(attributes.get(i).getEntropy() > gainMax){
+			if(attributes.get(i).getGain() > gainMax){
 				indexMax = i;
 				gainMax = attributes.get(i).getGain();
 			}
 		}
-		attributes.get(indexMax).createNextAttributes(attributes, dataSize);
-		System.out.println(attributes.toString()); //we print the tree
+		attributes.get(indexMax).createNextAttributes(attributes, dataSize,1);
+		System.out.println(attributes.get(indexMax).toString()); //we print the tree
 	}
 	
 	public static double mathEntropy(double p, double n) {

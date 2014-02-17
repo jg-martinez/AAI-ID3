@@ -96,7 +96,7 @@ public class Attribute {
 		return this.entropy;
 	}
 	
-	public int createNextAttributes(ArrayList<Attribute> array, int dataSize){		
+	public int createNextAttributes(ArrayList<Attribute> array, int dataSize, int depth){		
 		/*this.childAttribute = new ArrayList<Attribute>(); //we duplicate the array
 		for(int i = 0; i < array.size(); i++){
 			this.childAttribute.add(new Attribute(array.get(i)));
@@ -145,20 +145,42 @@ public class Attribute {
 					}
 					//once we deleted the wrong data, we delete the current attribute
 					tempArray.remove(i);
-					for(int k = 0; k < tempArray.size(); k++){ //we calculate the entropy for each attribute
+					for(int k = 0; k < tempArray.size() - 1; k++){ //we calculate the entropy for each attribute
 						double p = 0; //number of positive values
 						double n = 0; //number of negative values
-						for(int l = 0; l < dataSize; l++) { //we go through each line of data
-							if (tempArray.get(tempArray.size()-1).getValues().get(j).equals("P") || tempArray.get(tempArray.size()-1).getValues().get(j).equals("Yes")){
+						for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
+							if (tempArray.get(tempArray.size()-1).getValues().get(l).equals("P")){
 								p++; //if positive
-							} else if(tempArray.get(tempArray.size()-1).getValues().get(j).equals("N") || tempArray.get(tempArray.size()-1).getValues().get(j).equals("No")){
+							} else {
 								n++; //if negative
 							}
 						}
-						//we set the entropy of each attributes
+						//we set the entropy of each attributes			
 						tempArray.get(k).setEntropy(Reader.mathEntropy(p, n));
+						tempArray.get(k).calculateGain(tempArray, p + n);	
 					}
-					//now we can check, with this new set of data, which entropy is maximum					
+					//now we can check, with this new set of data, which entropy is maximum	
+					double gainMax = -1;
+					int indexMax = -1;
+					for(int k= 0; k < tempArray.size()-1; k++){ //looking for the max entropy
+						if(tempArray.get(k).getEntropy() > gainMax){
+							indexMax = k;
+							gainMax = tempArray.get(k).getGain();
+						}
+					}
+					if(tempArray.get(j).getValues().size() > 0){
+						tempArray.get(indexMax).createNextAttributes(tempArray,tempArray.get(j).getValues().size() ,depth+1);
+					} else {
+						tempArray.get(indexMax).createNextAttributes(tempArray,0 ,depth+1);
+					}
+					
+					String string = new String();
+					for(int k = 0; k < depth; k++){
+						string += "\t";
+					}
+					string += tempArray.get(indexMax).getName() + " = ";
+					string += tempArray.get(indexMax).getPossibleValues().get(j).toString();
+					System.out.println(string); //we print the tree
 				}
 			}
 		}
@@ -172,7 +194,7 @@ public class Attribute {
 	
 	public String toString(){
 		String string = new String();
-		string = this.name + this.entropy + "   " + this.gain + "\n";
+		string = this.name + this.values.toString() + "   " + this.gain + "\n";
 		return string;
 	}	
 	
