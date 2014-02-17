@@ -78,7 +78,7 @@ public class Reader {
 					n++; //if negative
 				}
 			}
-			//we set the entropy of each attributes
+			//we set the entropy of each attributes			
 			attributes.get(i).setEntropy(mathEntropy(p, n));
 		}
 		

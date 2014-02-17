@@ -6,8 +6,8 @@ public class Attribute {
 	private ArrayList<String> values;
 	//private ArrayList<Attribute> childAttribute;
 	private double entropy;	
-	private int positive;
-	private int negative;
+	private int[] positive;
+	private int[] negative;
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
@@ -31,6 +31,22 @@ public class Attribute {
 		this.possibleValues.add(tempValue);	
 	}
 	
+	public void calculateGain(ArrayList<Attribute> array){		
+		for(int i = 0; i < this.possibleValues.size(); i++){
+			positive[i] = 0;
+			negative[i] = 0;
+			for(int j = 0; j < this.values.size(); j++){
+				if(values.get(j).equals(this.possibleValues.get(i))){ 
+					if(array.get(array.size()-1).getValues().get(j).equals("Yes") || array.get(array.size()-1).getValues().get(j).equals("P")){
+						positive[i]++;
+					} else {
+						negative[i]++;
+					}
+				}
+			}
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	public Attribute(Attribute a){
 		this.name = a.name;
@@ -38,8 +54,8 @@ public class Attribute {
 		this.values = (ArrayList<String>) a.values.clone();
 		//this.childAttribute = (ArrayList<Attribute>) a.childAttribute.clone();
 		this.entropy = a.entropy;
-		this.positive = a.positive;
-		this.negative = a.negative;
+		this.positive = new int[this.possibleValues.size()];
+		this.negative = new int[this.possibleValues.size()];
 	}
 	
 	public String getName(){
@@ -76,7 +92,7 @@ public class Attribute {
 		}
 		
 		//we check the number of positive and negative classes
-		for(int i = 0; i < dataSize; i++){
+		/*for(int i = 0; i < dataSize; i++){
 			if(array.get(array.size()-1).getValues().get(i).equals("P") || array.get(array.size()-1).getValues().get(i).equals("Yes")){//if we get a positive
 				this.positive++;
 			} else if(array.get(array.size()-1).getValues().get(i).equals("N") || array.get(array.size()-1).getValues().get(i).equals("No")){//if we get a negative
@@ -86,7 +102,8 @@ public class Attribute {
 		
 		if(this.positive == 0 || this.negative == 0){
 			return 0; //this is a leaf of the tree
-		}
+		}*/
+		
 		//now we can go deeper
 		//we parse each values of the current attribute
 		for(int i = 0; i < array.size()-1; i++){  //i = the attribute
