@@ -1,0 +1,25 @@
+% 1. Title: Restaurant domain
+%
+% 2. Sources:
+%		Artificial Intelligence, A Modern Approach
+%
+@RELATION Quilan
+
+@ATTRIBUTE Outlook {Sunny,Rain}
+@ATTRIBUTE Temperature {Hot,Mild,Cool}
+@ATTRIBUTE Humidity {High,Normal}
+@ATTRIBUTE Windy {True,False}
+@ATTRIBUTE Class {N,P}
+
+@DATA
+Sunny,Hot,High,False,N
+Sunny,Hot,High,True,N
+Rain,Mild,High,False,P
+Rain,Cool,Normal,False,P
+Rain,Cool,Normal,True,N
+Sunny,Mild,High,False,N
+Sunny,Cool,Normal,False,P
+Rain,Mild,Normal,False,P
+Sunny,Mild,Normal,True,P
+
+Rain,Mild,High,True,N

@@ -1,13 +1,9 @@
 import java.util.ArrayList;
 
-
 public class Attribute {
 	private String name;
 	private ArrayList<String> values;
-	private double entropy;
-	private ArrayList<Attribute> childAttributes;
-	
-	
+	private double entropy;	
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
@@ -31,6 +27,9 @@ public class Attribute {
 	}
 	
 
+	public String getName(){
+		return this.name;
+	}
 	
 	public void setEntropy(double value) {
 		this.entropy = value; 
@@ -41,32 +40,32 @@ public class Attribute {
 	}
 	
 	public void createNextAttributes(int index, ArrayList<Attribute> array, ArrayList<ArrayList<String>> datas){
+		/*this.childAttributes = (ArrayList<Attribute>) array.clone();
+		this.childAttributes.remove(index);
+		this.childDatas = (ArrayList<ArrayList<String>>) datas.clone();
 		
-		if(datas.size() > 0){
-			this.childAttributes = new ArrayList<Attribute>(array); //duplicate the attributes
-			this.childAttributes.remove(index); //remove the root attribute from the new array
-			
-			for(int i = 0; i < values.size(); i++){
-				ArrayList<ArrayList<String>> childDatas = new ArrayList<ArrayList<String>>(datas); 			
-				for(int j = 0; j < childDatas.size(); j++){
-					if(!this.values.get(i).equals(childDatas.get(j).get(index))){
-						childDatas.remove(j);					
-					}
+		for(int i = 0; i < this.values.size(); i++){
+			ArrayList<ArrayList<String>> tempDatas = new ArrayList<ArrayList<String>>(this.childDatas); 	
+			for(int j = 0; j < tempDatas.size(); j++){		
+				if(tempDatas.get(j).size() == 0) return;
+				if(!this.values.get(i).equals(tempDatas.get(j).get(index))){
+					tempDatas.remove(j);
+					j--;					
 				}
-				for(int j = 0; j < childDatas.size(); j++){
-					childDatas.get(j).remove(index); //similarly, we delete the column of this attribute on the new data array
-				}			
-				calculateEntropyForChildAttribute(this.childAttributes, childDatas);			
 			}
-		}
+			for(int j = 0; j < tempDatas.size(); j++){
+				tempDatas.get(j).remove(index); //similarly, we delete the column of this attribute on the new data array
+			}			
+			calculateEntropyForChildAttribute(this.childAttributes, tempDatas);			
+		}*/
 	}
 	
 	public void calculateEntropyForChildAttribute(ArrayList<Attribute> array, ArrayList<ArrayList<String>> datas){
-		for(int i = 0; i < array.size(); i++) {
+		/*for(int i = 0; i < array.size() - 1; i++) {
 			double p = 0;
 			double n = 0;
 			for(int j = 0; j < datas.size(); j++) {
-				if (datas.get(j).get(array.size()-1).equals("Yes")){
+				if (datas.get(j).get(array.size()-1).equals("P")){
 					p++;
 				} else {
 					n++;
@@ -76,18 +75,21 @@ public class Attribute {
 		}
 		double entropyMax = -1;
 		int indexMax = -1;
-		for(int i= 0; i < array.size(); i++){
+		for(int i= 0; i < array.size() - 1; i++){
 			if(array.get(i).getEntropy() > entropyMax){
 				indexMax = i;
+				entropyMax = array.get(i).getEntropy();
 			}
 		}
 		if(indexMax != -1){
 			array.get(indexMax).createNextAttributes(indexMax,array,datas);
-		}
+		}*/
 	}
 	
 	public String toString(){
-		return this.name + this.values.toString() + this.entropy + "\n\t" + this.childAttributes.toString();
+		String string = new String();
+		string = this.name + this.values.toString() + this.entropy;
+		return string;
 	}	
 	
 }

@@ -41,7 +41,6 @@ public class Reader {
 	
 	public static void testLine(String line){
 		if(!line.startsWith("%") && !line.startsWith("@RELATION") && !line.isEmpty()){
-			//System.out.println(line);
 			String name = null;
 			String values = null;
 			if(line.startsWith("@ATTRIBUTE")){						
@@ -63,27 +62,29 @@ public class Reader {
 	}
 	
 	public static void calculateEntropyForRoot() {
-		for(int i = 0; i < attributes.size(); i++) {
-			double p = 0;
-			double n = 0;
-			for(int j = 0; j < datas.size(); j++) {
-				if (datas.get(j).get(attributes.size()-1).equals("Yes")){
-					p++;
+		for(int i = 0; i < attributes.size()-1; i++) { //we exclude the last attribute (the class)
+			double p = 0; //number of positive values
+			double n = 0; //number of negatve values
+			for(int j = 0; j < datas.size(); j++) { //we go through each line of data
+				if (datas.get(j).get(attributes.size()-1).equals("P") || datas.get(j).get(attributes.size()-1).equals("Yes")){ //for each line, we get the last attribute (the class)
+					p++; //if positive
 				} else {
-					n++;
+					n++; //if negative
 				}
 			}
+			//we set the entropy of each attributes
 			attributes.get(i).setEntropy(mathEntropy(p, n));
 		}
 		double entropyMax = -1;
 		int indexMax = -1;
-		for(int i= 0; i < attributes.size(); i++){
+		for(int i= 0; i < attributes.size()-1; i++){ //looking for the max entropy
 			if(attributes.get(i).getEntropy() > entropyMax){
 				indexMax = i;
+				entropyMax = attributes.get(i).getEntropy();
 			}
 		}
 		attributes.get(indexMax).createNextAttributes(indexMax,attributes,datas);
-		
+		System.out.println(attributes.get(indexMax).toString()); //we print the tree
 	}
 	
 	public static double mathEntropy(double p, double n) {
@@ -94,13 +95,12 @@ public class Reader {
 		return result;
 	}
 	
+	
 	public static void main(String[] args) {
 		String path = readPathOfFile();		
 		if (checkArffExtension(path)){
-			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/restaurant.arff
-			calculateEntropyForRoot();
-			System.out.println(attributes.toString());
-			System.out.println(datas.toString());
+			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/Quilan.arff
+			calculateEntropyForRoot();		
 		} else System.out.println("File doesn't have a .arff extension");
 		}
 }
