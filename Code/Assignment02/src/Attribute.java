@@ -8,12 +8,14 @@ public class Attribute {
 	private double entropy;	
 	private int[] positive;
 	private int[] negative;
-	private double[] specificEntropy;
+	//private double[] specificEntropy;
+	private double gain;
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
 		int index = 0;
 		this.entropy = 0;
+		this.gain = 0;
 		this.name = name;
 		this.possibleValues = new ArrayList<String>();
 		this.values = new ArrayList<String>();		
@@ -33,10 +35,10 @@ public class Attribute {
 		
 		this.positive = new int[this.possibleValues.size()];
 		this.negative = new int[this.possibleValues.size()];
-		this.specificEntropy = new double[this.possibleValues.size()];
+		//this.specificEntropy = new double[this.possibleValues.size()];
 	}
 	
-	public void calculateGain(ArrayList<Attribute> array){		
+	public void calculateGain(ArrayList<Attribute> array, double total){		
 		for(int i = 0; i < this.possibleValues.size(); i++){
 			positive[i] = 0;
 			negative[i] = 0;
@@ -49,8 +51,16 @@ public class Attribute {
 					}
 				}
 			}
-			specificEntropy[i] = Reader.mathEntropy(positive[i], negative[i]);
-		}	
+			//specificEntropy[i] = Reader.mathEntropy(positive[i], negative[i]);
+		}		
+		this.gain = this.entropy;
+		for(int i = 0; i < this.possibleValues.size(); i++){
+			this.gain -= (double)(((double)((double)positive[i] + (double)negative[i]))/(double)total)*Reader.mathEntropy(positive[i]/(positive[i]+negative[i]), negative[i]/(positive[i]+negative[i]));
+		}
+	}
+	
+	public double getGain(){
+		return this.gain;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -62,7 +72,8 @@ public class Attribute {
 		this.entropy = a.entropy;
 		this.positive = new int[this.possibleValues.size()];
 		this.negative = new int[this.possibleValues.size()];
-		this.specificEntropy = new double[this.possibleValues.size()];
+		this.gain = a.gain;
+		//this.specificEntropy = new double[this.possibleValues.size()];
 	}
 	
 	public String getName(){
@@ -160,7 +171,7 @@ public class Attribute {
 	
 	public String toString(){
 		String string = new String();
-		string = this.name + this.values.toString() + this.entropy;
+		string = this.name + this.values.toString() + this.entropy + "   " + this.gain + "\n";
 		return string;
 	}	
 	

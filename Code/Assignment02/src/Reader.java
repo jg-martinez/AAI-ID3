@@ -80,16 +80,15 @@ public class Reader {
 			}
 			//we set the entropy of each attributes			
 			attributes.get(i).setEntropy(mathEntropy(p, n));
-			attributes.get(i).calculateGain(attributes);
-			
+			attributes.get(i).calculateGain(attributes, p+n);			
 		}
 		
-		double entropyMax = -1;
+		double gainMax = -1;
 		int indexMax = -1;
 		for(int i= 0; i < attributes.size()-1; i++){ //looking for the max entropy
-			if(attributes.get(i).getEntropy() > entropyMax){
+			if(attributes.get(i).getEntropy() > gainMax){
 				indexMax = i;
-				entropyMax = attributes.get(i).getEntropy();
+				gainMax = attributes.get(i).getGain();
 			}
 		}
 		attributes.get(indexMax).createNextAttributes(attributes, dataSize);
