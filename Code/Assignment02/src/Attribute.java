@@ -2,33 +2,56 @@ import java.util.ArrayList;
 
 public class Attribute {
 	private String name;
+	private ArrayList<String> possibleValues;
 	private ArrayList<String> values;
+	//private ArrayList<Attribute> childAttribute;
 	private double entropy;	
+	private int positive;
+	private int negative;
 	
 	public Attribute(String name, String stringValues){
 		String tempValue = null;
 		int index = 0;
 		this.entropy = 0;
 		this.name = name;
-		this.values = new ArrayList<String>();
+		this.possibleValues = new ArrayList<String>();
+		this.values = new ArrayList<String>();		
 		
 		tempValue = (String) stringValues.subSequence(index, stringValues.indexOf(","));		
 		index = stringValues.indexOf(",") + 1;
-		this.values.add(tempValue);
+		this.possibleValues.add(tempValue);
 		
 		while(stringValues.indexOf(",", index) != -1){
 			tempValue = (String) stringValues.subSequence(index, stringValues.indexOf(",", index));		
 			index = stringValues.indexOf(",", index) + 1;
-			this.values.add(tempValue);
+			this.possibleValues.add(tempValue);
 		}
 		
 		tempValue = (String) stringValues.subSequence(index, stringValues.length());		
-		this.values.add(tempValue);		
+		this.possibleValues.add(tempValue);	
 	}
 	
-
+	@SuppressWarnings("unchecked")
+	public Attribute(Attribute a){
+		this.name = a.name;
+		this.possibleValues = (ArrayList<String>) a.possibleValues.clone();
+		this.values = (ArrayList<String>) a.values.clone();
+		//this.childAttribute = (ArrayList<Attribute>) a.childAttribute.clone();
+		this.entropy = a.entropy;
+		this.positive = a.positive;
+		this.negative = a.negative;
+	}
+	
 	public String getName(){
 		return this.name;
+	}
+	
+	public ArrayList<String> getPossibleValues(){
+		return this.possibleValues;
+	}
+	
+	public ArrayList<String> getValues(){
+		return this.values;
 	}
 	
 	public void setEntropy(double value) {
@@ -39,51 +62,76 @@ public class Attribute {
 		return this.entropy;
 	}
 	
-	public void createNextAttributes(int index, ArrayList<Attribute> array, ArrayList<ArrayList<String>> datas){
-		/*this.childAttributes = (ArrayList<Attribute>) array.clone();
-		this.childAttributes.remove(index);
-		this.childDatas = (ArrayList<ArrayList<String>>) datas.clone();
+	public int createNextAttributes(ArrayList<Attribute> array, int dataSize){		
+		/*this.childAttribute = new ArrayList<Attribute>(); //we duplicate the array
+		for(int i = 0; i < array.size(); i++){
+			this.childAttribute.add(new Attribute(array.get(i)));
+		}*/
+		if(array.get(array.size()-1).getValues().size() <= 0){
+			return -1; //we return -1 if there is no more examples in this branch
+		}
 		
-		for(int i = 0; i < this.values.size(); i++){
-			ArrayList<ArrayList<String>> tempDatas = new ArrayList<ArrayList<String>>(this.childDatas); 	
-			for(int j = 0; j < tempDatas.size(); j++){		
-				if(tempDatas.get(j).size() == 0) return;
-				if(!this.values.get(i).equals(tempDatas.get(j).get(index))){
-					tempDatas.remove(j);
-					j--;					
+		if(array.size() == 1){ //if the only attribute left is the class
+			return -2;
+		}
+		
+		//we check the number of positive and negative classes
+		for(int i = 0; i < dataSize; i++){
+			if(array.get(array.size()-1).getValues().get(i).equals("P") || array.get(array.size()-1).getValues().get(i).equals("Yes")){//if we get a positive
+				this.positive++;
+			} else if(array.get(array.size()-1).getValues().get(i).equals("N") || array.get(array.size()-1).getValues().get(i).equals("No")){//if we get a negative
+				this.negative++;
+			}
+		}
+		
+		if(this.positive == 0 || this.negative == 0){
+			return 0; //this is a leaf of the tree
+		}
+		//now we can go deeper
+		//we parse each values of the current attribute
+		for(int i = 0; i < array.size()-1; i++){  //i = the attribute
+			if(array.get(i).getName().equals(this.name)){//if we get the right attribute
+				for (int j = 0; j < array.get(i).getPossibleValues().size(); j++){ //for each possible value, we go deeper in the tree
+					// j = the possible value
+					ArrayList<Attribute> tempArray = new ArrayList<Attribute>();
+					for(int k = 0; k < array.size(); k++){
+						tempArray.add(new Attribute(array.get(k)));
+					}
+					for(int k = 0; k < tempArray.get(i).getValues().size(); k++){ //for select each value corresponding of the current possible value
+						//k = the data
+						if(!tempArray.get(i).getValues().get(k).equals(tempArray.get(i).getPossibleValues().get(j))){ //if the data is different from the current value
+							//we remove the value in the new array for each attribute
+							for(int l = 0; l < tempArray.size(); l++){
+								tempArray.get(l).getValues().remove(k);								
+							}
+							k--;
+						}
+					}
+					//once we deleted the wrong data, we delete the current attribute
+					tempArray.remove(i);
+					for(int k = 0; k < tempArray.size(); k++){ //we calculate the entropy for each attribute
+						double p = 0; //number of positive values
+						double n = 0; //number of negative values
+						for(int l = 0; l < dataSize; l++) { //we go through each line of data
+							if (tempArray.get(tempArray.size()-1).getValues().get(j).equals("P") || tempArray.get(tempArray.size()-1).getValues().get(j).equals("Yes")){
+								p++; //if positive
+							} else if(tempArray.get(tempArray.size()-1).getValues().get(j).equals("N") || tempArray.get(tempArray.size()-1).getValues().get(j).equals("No")){
+								n++; //if negative
+							}
+						}
+						//we set the entropy of each attributes
+						tempArray.get(k).setEntropy(Reader.mathEntropy(p, n));
+					}
+					//now we can check, with this new set of data, which entropy is maximum					
 				}
 			}
-			for(int j = 0; j < tempDatas.size(); j++){
-				tempDatas.get(j).remove(index); //similarly, we delete the column of this attribute on the new data array
-			}			
-			calculateEntropyForChildAttribute(this.childAttributes, tempDatas);			
-		}*/
+		}
+		return 1;
 	}
 	
-	public void calculateEntropyForChildAttribute(ArrayList<Attribute> array, ArrayList<ArrayList<String>> datas){
-		/*for(int i = 0; i < array.size() - 1; i++) {
-			double p = 0;
-			double n = 0;
-			for(int j = 0; j < datas.size(); j++) {
-				if (datas.get(j).get(array.size()-1).equals("P")){
-					p++;
-				} else {
-					n++;
-				}
-			}
-			array.get(i).setEntropy(Reader.mathEntropy(p, n));
-		}
-		double entropyMax = -1;
-		int indexMax = -1;
-		for(int i= 0; i < array.size() - 1; i++){
-			if(array.get(i).getEntropy() > entropyMax){
-				indexMax = i;
-				entropyMax = array.get(i).getEntropy();
-			}
-		}
-		if(indexMax != -1){
-			array.get(indexMax).createNextAttributes(indexMax,array,datas);
-		}*/
+	public void calculateEntropyForChildAttribute(ArrayList<Attribute> array){
+
+
 	}
 	
 	public String toString(){

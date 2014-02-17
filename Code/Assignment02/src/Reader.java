@@ -7,8 +7,8 @@ import java.util.Scanner;
 
 public class Reader {	
 	static ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-	static ArrayList<ArrayList<String>> datas = new ArrayList<ArrayList<String>>();
 	static boolean canReadData = false;
+	static int dataSize;
 	
 	public static boolean checkArffExtension(String string) {
 		return string.contains(".arff");
@@ -30,6 +30,7 @@ public class Reader {
 			e1.printStackTrace();
 		}
 		String line = null;
+		dataSize = 0;
 		try {
 			while ((line = reader.readLine()) != null) {
 				testLine(line);
@@ -49,11 +50,16 @@ public class Reader {
 				attributes.add(new Attribute(name,values));
 			}			
 			if(canReadData){	
-				ArrayList<String> strList = new ArrayList<String>(); // for each line we create a new ArrayList of String
+				int i = 0;
 				for(String subString:line.split(",")){
-					strList.add(subString);			    
+					if(attributes.get(i).getPossibleValues().contains(subString)){ //if the value exist
+						attributes.get(i).getValues().add(subString);
+					} else {
+						attributes.get(i).getValues().add("Unknown");
+					}
+					i++;
 				}
-				datas.add(strList);
+				dataSize++;
 			}
 			if(line.startsWith("@DATA")){
 				canReadData = true;
@@ -64,9 +70,9 @@ public class Reader {
 	public static void calculateEntropyForRoot() {
 		for(int i = 0; i < attributes.size()-1; i++) { //we exclude the last attribute (the class)
 			double p = 0; //number of positive values
-			double n = 0; //number of negatve values
-			for(int j = 0; j < datas.size(); j++) { //we go through each line of data
-				if (datas.get(j).get(attributes.size()-1).equals("P") || datas.get(j).get(attributes.size()-1).equals("Yes")){ //for each line, we get the last attribute (the class)
+			double n = 0; //number of negative values
+			for(int j = 0; j < dataSize; j++) { //we go through each line of data
+				if (attributes.get(attributes.size()-1).getValues().get(j).equals("P")){
 					p++; //if positive
 				} else {
 					n++; //if negative
@@ -75,6 +81,7 @@ public class Reader {
 			//we set the entropy of each attributes
 			attributes.get(i).setEntropy(mathEntropy(p, n));
 		}
+		
 		double entropyMax = -1;
 		int indexMax = -1;
 		for(int i= 0; i < attributes.size()-1; i++){ //looking for the max entropy
@@ -83,8 +90,8 @@ public class Reader {
 				entropyMax = attributes.get(i).getEntropy();
 			}
 		}
-		attributes.get(indexMax).createNextAttributes(indexMax,attributes,datas);
-		System.out.println(attributes.get(indexMax).toString()); //we print the tree
+		attributes.get(indexMax).createNextAttributes(attributes, dataSize);
+		System.out.println(attributes.toString()); //we print the tree
 	}
 	
 	public static double mathEntropy(double p, double n) {
@@ -97,7 +104,7 @@ public class Reader {
 	
 	
 	public static void main(String[] args) {
-		String path = readPathOfFile();		
+		String path = "C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/Quilan.arff";//readPathOfFile();		
 		if (checkArffExtension(path)){
 			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/Quilan.arff
 			calculateEntropyForRoot();		
