@@ -5,6 +5,7 @@ public class Attribute {
 	private String name;
 	private ArrayList<String> values;
 	private double entropy;
+	private ArrayList<Attribute> childAttributes;
 	
 	
 	
@@ -29,9 +30,7 @@ public class Attribute {
 		this.values.add(tempValue);		
 	}
 	
-	public String toString(){
-		return this.name + this.values.toString() + this.entropy;
-	}
+
 	
 	public void setEntropy(double value) {
 		this.entropy = value; 
@@ -42,20 +41,23 @@ public class Attribute {
 	}
 	
 	public void createNextAttributes(int index, ArrayList<Attribute> array, ArrayList<ArrayList<String>> datas){
-		ArrayList<Attribute> childAttributes = new ArrayList<Attribute>(array); //duplicate the attributes
-		childAttributes.remove(index); //remove the root attribute from the new array
 		
-		for(int i = 0; i < values.size(); i++){
-			ArrayList<ArrayList<String>> childDatas = new ArrayList<ArrayList<String>>(datas); 			
-			for(int j = 0; j < Reader.datas.size(); j++){
-				if(!this.values.get(i).equals(Reader.datas.get(j).get(index))){
-					childDatas.remove(j);
+		if(datas.size() > 0){
+			this.childAttributes = new ArrayList<Attribute>(array); //duplicate the attributes
+			this.childAttributes.remove(index); //remove the root attribute from the new array
+			
+			for(int i = 0; i < values.size(); i++){
+				ArrayList<ArrayList<String>> childDatas = new ArrayList<ArrayList<String>>(datas); 			
+				for(int j = 0; j < childDatas.size(); j++){
+					if(!this.values.get(i).equals(childDatas.get(j).get(index))){
+						childDatas.remove(j);					
+					}
 				}
+				for(int j = 0; j < childDatas.size(); j++){
+					childDatas.get(j).remove(index); //similarly, we delete the column of this attribute on the new data array
+				}			
+				calculateEntropyForChildAttribute(this.childAttributes, childDatas);			
 			}
-			for(int j = 0; j < childDatas.size(); j++){
-				childDatas.get(j).remove(index); //similarly, we delete the column of this attribute on the new data array
-			}			
-			calculateEntropyForChildAttribute(childAttributes, childDatas);			
 		}
 	}
 	
@@ -79,7 +81,13 @@ public class Attribute {
 				indexMax = i;
 			}
 		}
-		array.get(indexMax).createNextAttributes(indexMax,array,datas);
+		if(indexMax != -1){
+			array.get(indexMax).createNextAttributes(indexMax,array,datas);
+		}
 	}
+	
+	public String toString(){
+		return this.name + this.values.toString() + this.entropy + "\n\t" + this.childAttributes.toString();
+	}	
 	
 }
