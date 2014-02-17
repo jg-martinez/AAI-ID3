@@ -82,7 +82,8 @@ public class Reader {
 				indexMax = i;
 			}
 		}
-		attributes.get(indexMax).createNextAttributes();
+		attributes.get(indexMax).createNextAttributes(indexMax,attributes,datas);
+		
 	}
 	
 	public static double mathEntropy(double p, double n) {
