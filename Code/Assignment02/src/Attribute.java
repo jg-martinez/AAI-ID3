@@ -55,7 +55,7 @@ public class Attribute {
 		}		
 		this.gain = this.entropy;
 		for(int i = 0; i < this.possibleValues.size(); i++){
-			this.gain -= (double)(((double)((double)positive[i] + (double)negative[i]))/(double)total)*Reader.mathEntropy(positive[i]/(positive[i]+negative[i]), negative[i]/(positive[i]+negative[i]));
+			this.gain -= (double)(((double)((double)positive[i] + (double)negative[i]))/(double)total)*Reader.mathEntropy((double)positive[i]/(double)((double)positive[i]+(double)negative[i]), (double)negative[i]/(double)((double)positive[i]+(double)negative[i]));
 		}
 	}
 	
@@ -108,19 +108,20 @@ public class Attribute {
 		if(array.size() == 1){ //if the only attribute left is the class
 			return -2;
 		}
-		
+		int positive = 0;
+		int negative = 0;
 		//we check the number of positive and negative classes
-		/*for(int i = 0; i < dataSize; i++){
+		for(int i = 0; i < dataSize; i++){
 			if(array.get(array.size()-1).getValues().get(i).equals("P") || array.get(array.size()-1).getValues().get(i).equals("Yes")){//if we get a positive
-				this.positive++;
+				positive++;
 			} else if(array.get(array.size()-1).getValues().get(i).equals("N") || array.get(array.size()-1).getValues().get(i).equals("No")){//if we get a negative
-				this.negative++;
+				negative++;
 			}
 		}
 		
-		if(this.positive == 0 || this.negative == 0){
+		if(positive == 0 || negative == 0){
 			return 0; //this is a leaf of the tree
-		}*/
+		}
 		
 		//now we can go deeper
 		//we parse each values of the current attribute
@@ -132,7 +133,7 @@ public class Attribute {
 					for(int k = 0; k < array.size(); k++){
 						tempArray.add(new Attribute(array.get(k)));
 					}
-					for(int k = 0; k < tempArray.get(i).getValues().size(); k++){ //for select each value corresponding of the current possible value
+					for(int k = 0; k < tempArray.get(i).getValues().size(); k++){ //for each value corresponding of the current possible value
 						//k = the data
 						if(!tempArray.get(i).getValues().get(k).equals(tempArray.get(i).getPossibleValues().get(j))){ //if the data is different from the current value
 							//we remove the value in the new array for each attribute
@@ -171,7 +172,7 @@ public class Attribute {
 	
 	public String toString(){
 		String string = new String();
-		string = this.name + this.values.toString() + this.entropy + "   " + this.gain + "\n";
+		string = this.name + this.entropy + "   " + this.gain + "\n";
 		return string;
 	}	
 	

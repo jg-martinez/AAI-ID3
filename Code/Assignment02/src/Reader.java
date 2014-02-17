@@ -80,7 +80,7 @@ public class Reader {
 			}
 			//we set the entropy of each attributes			
 			attributes.get(i).setEntropy(mathEntropy(p, n));
-			attributes.get(i).calculateGain(attributes, p+n);			
+			attributes.get(i).calculateGain(attributes, p + n);			
 		}
 		
 		double gainMax = -1;
