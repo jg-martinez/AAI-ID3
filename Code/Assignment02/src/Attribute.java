@@ -97,10 +97,6 @@ public class Attribute {
 	}
 	
 	public int createNextAttributes(ArrayList<Attribute> array, int dataSize, int depth){		
-		/*this.childAttribute = new ArrayList<Attribute>(); //we duplicate the array
-		for(int i = 0; i < array.size(); i++){
-			this.childAttribute.add(new Attribute(array.get(i)));
-		}*/
 		if(array.get(array.size()-1).getValues().size() <= 0){
 			return -1; //we return -1 if there is no more examples in this branch
 		}
@@ -145,6 +141,7 @@ public class Attribute {
 					}
 					//once we deleted the wrong data, we delete the current attribute
 					tempArray.remove(i);
+					if(i < j) j--;
 					for(int k = 0; k < tempArray.size() - 1; k++){ //we calculate the entropy for each attribute
 						double p = 0; //number of positive values
 						double n = 0; //number of negative values
@@ -168,19 +165,16 @@ public class Attribute {
 							gainMax = tempArray.get(k).getGain();
 						}
 					}
-					if(tempArray.get(j).getValues().size() > 0){
-						tempArray.get(indexMax).createNextAttributes(tempArray,tempArray.get(j).getValues().size() ,depth+1);
-					} else {
-						tempArray.get(indexMax).createNextAttributes(tempArray,0 ,depth+1);
+					if(indexMax != -1) {
+						tempArray.get(indexMax).createNextAttributes(tempArray,tempArray.get(j).getValues().size() ,depth+1);				
+						String string = new String();
+						for(int k = 0; k < depth; k++){
+							string += "\t";
+						}
+						string += tempArray.get(indexMax).getName() + " = ";
+						string += tempArray.get(indexMax).getPossibleValues().get(j).toString();
+						System.out.println(string); //we print the tree
 					}
-					
-					String string = new String();
-					for(int k = 0; k < depth; k++){
-						string += "\t";
-					}
-					string += tempArray.get(indexMax).getName() + " = ";
-					string += tempArray.get(indexMax).getPossibleValues().get(j).toString();
-					System.out.println(string); //we print the tree
 				}
 			}
 		}
