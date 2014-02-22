@@ -68,19 +68,25 @@ public class Reader {
 	}
 	
 	public static void calculateEntropyForRoot() {
-		for(int i = 0; i < attributes.size()-1; i++) { //we exclude the last attribute (the class)
-			double p = 0; //number of positive values
-			double n = 0; //number of negative values
-			for(int j = 0; j < dataSize; j++) { //we go through each line of data
-				if (attributes.get(attributes.size()-1).getValues().get(j).equals("P")){
-					p++; //if positive
-				} else {
-					n++; //if negative
+		for(int currentAttribute = 0; currentAttribute < attributes.size()-1; currentAttribute++) { //we exclude the last attribute (the class)
+			double[]classeCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
+			for(int i = 0; i < attributes.get(attributes.size()-1).getPossibleValues().size(); i++){
+				classeCounter[i] = 0;
+			}
+			for(int i = 0; i <  attributes.get(attributes.size()-1).getPossibleValues().size(); i++){
+				for(int l = 0; l < attributes.get(attributes.size()-1).getValues().size(); l++) { //we go through each line of data
+					if (attributes.get(attributes.size()-1).getValues().get(l).equals(attributes.get(attributes.size()-1).getPossibleValues().get(i))){
+						classeCounter[i]++; //if positive
+					}
 				}
 			}
+			double total = 0;
+			for(int i = 0; i < attributes.get(attributes.size()-1).getPossibleValues().size(); i++){
+				total += classeCounter[i];
+			}
 			//we set the entropy of each attributes			
-			attributes.get(i).setEntropy(mathEntropy(p, n));
-			attributes.get(i).calculateGain(attributes, p + n);			
+			attributes.get(currentAttribute).setEntropy(mathEntropy(classeCounter, total));
+			attributes.get(currentAttribute).calculateGain(attributes, total);			
 		}
 		
 		double gainMax = -1;
@@ -121,11 +127,13 @@ public class Reader {
 		
 	}
 	
-	public static double mathEntropy(double p, double n) {
-		double total = p + n;
+	public static double mathEntropy(double[] classe, double total) {
 		double result = 0;
-		if(p != 0 && n != 0)
-			result = -(p/total)*(Math.log(p/total)/Math.log(2)) -n/total*(Math.log(n/total)/Math.log(2));
+		for(int i = 0; i < classe.length; i++){
+			if(classe[i] != 0){
+				result -= (classe[i]/total)*(Math.log(classe[i]/total)/Math.log(2));
+			}
+		}
 		return result;
 	}
 	

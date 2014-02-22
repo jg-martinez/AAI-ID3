@@ -4,11 +4,7 @@ public class Attribute {
 	private String name;
 	private ArrayList<String> possibleValues;
 	private ArrayList<String> values;
-	//private ArrayList<Attribute> childAttribute;
 	private double entropy;	
-	private int[] positive;
-	private int[] negative;
-	private double[] specificEntropy;
 	private double gain;
 	
 	public Attribute(String name, String stringValues){
@@ -32,35 +28,10 @@ public class Attribute {
 		
 		tempValue = (String) stringValues.subSequence(index, stringValues.length());		
 		this.possibleValues.add(tempValue);	
-		
-		this.positive = new int[this.possibleValues.size()];
-		this.negative = new int[this.possibleValues.size()];
-		//this.specificEntropy = new double[this.possibleValues.size()];
 	}
 	
-	public void calculateGain(ArrayList<Attribute> array, double total){		
-		for(int i = 0; i < this.possibleValues.size(); i++){
-			positive[i] = 0;
-			negative[i] = 0;
-			for(int j = 0; j < this.values.size(); j++){
-				if(values.get(j).equals(this.possibleValues.get(i))){ 
-					if(array.get(array.size()-1).getValues().get(j).equals("Yes") || array.get(array.size()-1).getValues().get(j).equals("P")){
-						positive[i]++;
-					} else {
-						negative[i]++;
-					}
-				}
-			}
-			//specificEntropy[i] = Reader.mathEntropy(positive[i], negative[i]);
-		}		
-		
-		this.gain = this.entropy;
-		for(int i = 0; i < this.possibleValues.size(); i++){
-			if(positive[i] != 0 && negative[i] != 0){
-				this.gain -= (double)(((double)((double)positive[i] + (double)negative[i]))/(double)total)*Reader.mathEntropy((double)positive[i]/(double)((double)positive[i]+(double)negative[i]), (double)negative[i]/(double)((double)positive[i]+(double)negative[i]));
-			}
-		}
-	}
+	
+	
 	
 	public double getGain(){
 		return this.gain;
@@ -71,12 +42,8 @@ public class Attribute {
 		this.name = a.name;
 		this.possibleValues = (ArrayList<String>) a.possibleValues.clone();
 		this.values = (ArrayList<String>) a.values.clone();
-		//this.childAttribute = (ArrayList<Attribute>) a.childAttribute.clone();
-		this.entropy = a.entropy;
-		this.positive = new int[this.possibleValues.size()];
-		this.negative = new int[this.possibleValues.size()];
+		this.entropy = a.entropy;		
 		this.gain = a.gain;
-		//this.specificEntropy = new double[this.possibleValues.size()];
 	}
 	
 	public String getName(){
@@ -123,7 +90,7 @@ public class Attribute {
 						
 					removeData(tempArray, attribute, upperAttributeValue); //delete the data which have nothing to do with the value of the current attribute
 					
-					calculateGain(tempArray, attribute, value);
+					parseTempArray(tempArray);
 					
 					//now we can check, with this new set of data, which entropy is maximum	
 					int indexMax = findBestGain(tempArray, attribute, value);
@@ -138,24 +105,33 @@ public class Attribute {
 							string += tempArray.get(indexMax).getName() + " = ";
 							string += tempArray.get(indexMax).getPossibleValues().get(j).toString() + " : ";						
 							string += tempArray.get(indexMax).getGain() + " : ";
-							int positive = 0;
-							int negative = 0;
+
+
+							double[]classeCounter = new double[tempArray.get(tempArray.size()-1).getPossibleValues().size()];	
+							for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
+								classeCounter[k] = 0;
+							}
+							
 							//we check the number of positive and negative classes
 							for(int data = 0; data < tempArray.get(tempArray.size()-1).getValues().size(); data++){
 								if(tempArray.get(indexMax).getValues().get(data).equals(tempArray.get(indexMax).getPossibleValues().get(j))){
-									if(tempArray.get(tempArray.size()-1).getValues().get(data).equals("P")){//if we get a positive
-										positive++;
-									} else if(tempArray.get(tempArray.size()-1).getValues().get(data).equals("N")){//if we get a negative
-										negative++;
+									if(tempArray.get(tempArray.size()-1).getValues().get(data).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(data))){//if we get a positive
+										classeCounter[data]++;
 									}
 								}
 							}
-							if(positive == 0 || negative == 0){
-								string += "P = " + positive + " |  N = " + negative; //we print the tree
+							if(noNeedToGoDeeper(classeCounter)){
+								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
+									string += tempArray.get(tempArray.size()-1).getValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+								}
+								string = string.substring(0, string.length()-1);
 								System.out.println(string); //we print the tree	
 							} else {
-								string += "P = " + positive + " |  N = " + negative; //we print the tree
-								System.out.println(string); //we print the tree
+								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
+									string += tempArray.get(tempArray.size()-1).getValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+								}
+								string = string.substring(0, string.length()-1);
+								System.out.println(string); //we print the tree	
 								tempArray.get(indexMax).createNextAttributes(tempArray, depth +1,j);						
 							}
 						}
@@ -166,6 +142,18 @@ public class Attribute {
 			}
 		}
 		return 0;
+	}
+	
+	public boolean noNeedToGoDeeper(double[] classe){
+		boolean tempResult = false;
+		for(int i = 0; i < classe.length; i++){
+			if(classe[i] != 0 && tempResult == false){
+				tempResult = true;
+			} else if (classe[i] != 0 && tempResult == true){
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public void removeData(ArrayList<Attribute> tempArray, int attribute, int value){
@@ -183,20 +171,41 @@ public class Attribute {
 		tempArray.remove(attribute);
 	}
 	
-	public void calculateGain(ArrayList<Attribute> tempArray, int attribute, int value){
+	public void calculateGain(ArrayList<Attribute> tempArray, double total){
+		this.gain = this.entropy;
+		double[][] classe = new double[this.possibleValues.size()][tempArray.get(tempArray.size()-1).getPossibleValues().size()];		
+		for(int i = 0; i < this.possibleValues.size(); i++){
+			double tempValue = 0;
+			for(int j = 0; j < tempArray.get(tempArray.size()-1).getPossibleValues().size(); j++){				
+				tempValue+= classe[i][j];				
+			}
+			if(tempValue != 0){
+				this.gain -= (tempValue/total)*Reader.mathEntropy(classe[i],tempValue);
+			}				
+		}
+
+	}
+	
+	public void parseTempArray(ArrayList<Attribute> tempArray){
 		for(int nextAttribute = 0; nextAttribute < tempArray.size() - 1; nextAttribute++){ //we calculate the entropy for each attribute
-			double p = 0; //number of positive values
-			double n = 0; //number of negative values
-			for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
-				if (tempArray.get(tempArray.size()-1).getValues().get(l).equals("P")){
-					p++; //if positive
-				} else {								
-					n++; //if negative
+			double[]classeCounter = new double[tempArray.get(tempArray.size()-1).getPossibleValues().size()];	
+			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+				classeCounter[i] = 0;
+			}
+			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+				for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
+					if (tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
+						classeCounter[i]++; //if positive
+					}
 				}
 			}
+			double total = 0;
+			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+				total += classeCounter[i];
+			}
 			//we set the entropy of each attributes			
-			tempArray.get(nextAttribute).setEntropy(Reader.mathEntropy(p, n));
-			tempArray.get(nextAttribute).calculateGain(tempArray, p + n);	
+			tempArray.get(nextAttribute).setEntropy(Reader.mathEntropy(classeCounter, total));
+			tempArray.get(nextAttribute).calculateGain(tempArray, total);	
 		}
 	}
 	
@@ -209,8 +218,7 @@ public class Attribute {
 				gainMax = tempArray.get(k).getGain();
 			}
 		}
-		return indexMax;
-		
+		return indexMax;		
 	}
 	
 	public String toString(){
