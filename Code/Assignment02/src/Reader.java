@@ -91,15 +91,41 @@ public class Reader {
 				gainMax = attributes.get(i).getGain();
 			}
 		}
-		attributes.get(indexMax).createNextAttributes(attributes, dataSize,1);
-		System.out.println(attributes.get(indexMax).toString()); //we print the tree
+		//j= number of possible value for this attribute
+		for (int j = 0; j < attributes.get(indexMax).getPossibleValues().size(); j++){
+			String string = new String();
+			string += attributes.get(indexMax).getName() + " = ";
+			string += attributes.get(indexMax).getPossibleValues().get(j).toString() + " : ";
+
+			int positive = 0;
+			int negative = 0;
+			//we check the number of positive and negative classes
+			for(int k = 0; k < attributes.get(attributes.size()-1).getValues().size(); k++){
+				if(attributes.get(indexMax).getValues().get(k).equals(attributes.get(indexMax).getPossibleValues().get(j))){
+					if(attributes.get(attributes.size()-1).getValues().get(k).equals("P")){//if we get a positive
+						positive++;
+					} else if(attributes.get(attributes.size()-1).getValues().get(k).equals("N")){//if we get a negative
+						negative++;
+					}
+				}
+			}
+			if(positive == 0 || negative == 0){
+				string += "P = " + positive + " |  N = " + negative; //we print the tree
+				System.out.println(string); //we print the tree							
+			} else {
+				string += "P = " + positive + " |  N = " + negative; //we print the tree
+				System.out.println(string); //we print the tree
+				attributes.get(indexMax).createNextAttributes(attributes,1,j);						
+			}	
+		}
+		
 	}
 	
 	public static double mathEntropy(double p, double n) {
 		double total = p + n;
 		double result = 0;
 		if(p != 0 && n != 0)
-			result = -(p/total)*(Math.log(p/total)/Math.log(2))-n/total*(Math.log(n/total)/Math.log(2));
+			result = -(p/total)*(Math.log(p/total)/Math.log(2)) -n/total*(Math.log(n/total)/Math.log(2));
 		return result;
 	}
 	

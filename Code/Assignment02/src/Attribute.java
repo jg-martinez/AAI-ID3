@@ -8,7 +8,7 @@ public class Attribute {
 	private double entropy;	
 	private int[] positive;
 	private int[] negative;
-	//private double[] specificEntropy;
+	private double[] specificEntropy;
 	private double gain;
 	
 	public Attribute(String name, String stringValues){
@@ -53,9 +53,12 @@ public class Attribute {
 			}
 			//specificEntropy[i] = Reader.mathEntropy(positive[i], negative[i]);
 		}		
+		
 		this.gain = this.entropy;
 		for(int i = 0; i < this.possibleValues.size(); i++){
-			this.gain -= (double)(((double)((double)positive[i] + (double)negative[i]))/(double)total)*Reader.mathEntropy((double)positive[i]/(double)((double)positive[i]+(double)negative[i]), (double)negative[i]/(double)((double)positive[i]+(double)negative[i]));
+			if(positive[i] != 0 && negative[i] != 0){
+				this.gain -= (double)(((double)((double)positive[i] + (double)negative[i]))/(double)total)*Reader.mathEntropy((double)positive[i]/(double)((double)positive[i]+(double)negative[i]), (double)negative[i]/(double)((double)positive[i]+(double)negative[i]));
+			}
 		}
 	}
 	
@@ -96,94 +99,118 @@ public class Attribute {
 		return this.entropy;
 	}
 	
-	public int createNextAttributes(ArrayList<Attribute> array, int dataSize, int depth){		
+	public int createNextAttributes(ArrayList<Attribute> array, int depth, int upperAttributeValue){		
 		if(array.get(array.size()-1).getValues().size() <= 0){
+			System.out.println("-1"); //we print the tree
 			return -1; //we return -1 if there is no more examples in this branch
 		}
 		
 		if(array.size() == 1){ //if the only attribute left is the class
+			System.out.println("-2"); //we print the tree
 			return -2;
-		}
-		int positive = 0;
-		int negative = 0;
-		//we check the number of positive and negative classes
-		for(int i = 0; i < dataSize; i++){
-			if(array.get(array.size()-1).getValues().get(i).equals("P") || array.get(array.size()-1).getValues().get(i).equals("Yes")){//if we get a positive
-				positive++;
-			} else if(array.get(array.size()-1).getValues().get(i).equals("N") || array.get(array.size()-1).getValues().get(i).equals("No")){//if we get a negative
-				negative++;
-			}
-		}
-		
-		if(positive == 0 || negative == 0){
-			return 0; //this is a leaf of the tree
-		}
+		}		
 		
 		//now we can go deeper
 		//we parse each values of the current attribute
-		for(int i = 0; i < array.size()-1; i++){  //i = the attribute
-			if(array.get(i).getName().equals(this.name)){//if we get the right attribute
-				for (int j = 0; j < array.get(i).getPossibleValues().size(); j++){ //for each possible value, we go deeper in the tree
+		for(int attribute = 0; attribute < array.size()-1; attribute++){  //i = the attribute
+			if(array.get(attribute).getName().equals(this.name)){//if we get the right attribute
+				for (int value = 0; value < array.get(attribute).getPossibleValues().size(); value++){ //for each possible value, we go deeper in the tree
 					// j = the possible value
 					ArrayList<Attribute> tempArray = new ArrayList<Attribute>();
-					for(int k = 0; k < array.size(); k++){
+					for(int k = 0; k < array.size(); k++){ //we duplicate the attributes array in a new array
 						tempArray.add(new Attribute(array.get(k)));
 					}
-					for(int k = 0; k < tempArray.get(i).getValues().size(); k++){ //for each value corresponding of the current possible value
-						//k = the data
-						if(!tempArray.get(i).getValues().get(k).equals(tempArray.get(i).getPossibleValues().get(j))){ //if the data is different from the current value
-							//we remove the value in the new array for each attribute
-							for(int l = 0; l < tempArray.size(); l++){
-								tempArray.get(l).getValues().remove(k);								
-							}
-							k--;
-						}
-					}
-					//once we deleted the wrong data, we delete the current attribute
-					tempArray.remove(i);
-					if(i < j) j--;
-					for(int k = 0; k < tempArray.size() - 1; k++){ //we calculate the entropy for each attribute
-						double p = 0; //number of positive values
-						double n = 0; //number of negative values
-						for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
-							if (tempArray.get(tempArray.size()-1).getValues().get(l).equals("P")){
-								p++; //if positive
-							} else {
-								n++; //if negative
-							}
-						}
-						//we set the entropy of each attributes			
-						tempArray.get(k).setEntropy(Reader.mathEntropy(p, n));
-						tempArray.get(k).calculateGain(tempArray, p + n);	
-					}
+						
+					removeData(tempArray, attribute, upperAttributeValue); //delete the data which have nothing to do with the value of the current attribute
+					
+					calculateGain(tempArray, attribute, value);
+					
 					//now we can check, with this new set of data, which entropy is maximum	
-					double gainMax = -1;
-					int indexMax = -1;
-					for(int k= 0; k < tempArray.size()-1; k++){ //looking for the max entropy
-						if(tempArray.get(k).getEntropy() > gainMax){
-							indexMax = k;
-							gainMax = tempArray.get(k).getGain();
-						}
-					}
+					int indexMax = findBestGain(tempArray, attribute, value);
+					
 					if(indexMax != -1) {
-						tempArray.get(indexMax).createNextAttributes(tempArray,tempArray.get(j).getValues().size() ,depth+1);				
-						String string = new String();
-						for(int k = 0; k < depth; k++){
-							string += "\t";
+						//for each value of the attribute with the max Gain
+						for(int j = 0; j < tempArray.get(indexMax).getPossibleValues().size(); j++){
+							String string = new String();
+							for(int k = 0; k < depth; k++){
+								string += "\t";
+							}
+							string += tempArray.get(indexMax).getName() + " = ";
+							string += tempArray.get(indexMax).getPossibleValues().get(j).toString() + " : ";						
+							string += tempArray.get(indexMax).getGain() + " : ";
+							int positive = 0;
+							int negative = 0;
+							//we check the number of positive and negative classes
+							for(int data = 0; data < tempArray.get(tempArray.size()-1).getValues().size(); data++){
+								if(tempArray.get(indexMax).getValues().get(data).equals(tempArray.get(indexMax).getPossibleValues().get(j))){
+									if(tempArray.get(tempArray.size()-1).getValues().get(data).equals("P")){//if we get a positive
+										positive++;
+									} else if(tempArray.get(tempArray.size()-1).getValues().get(data).equals("N")){//if we get a negative
+										negative++;
+									}
+								}
+							}
+							if(positive == 0 || negative == 0){
+								string += "P = " + positive + " |  N = " + negative; //we print the tree
+								System.out.println(string); //we print the tree	
+							} else {
+								string += "P = " + positive + " |  N = " + negative; //we print the tree
+								System.out.println(string); //we print the tree
+								tempArray.get(indexMax).createNextAttributes(tempArray, depth +1,j);						
+							}
 						}
-						string += tempArray.get(indexMax).getName() + " = ";
-						string += tempArray.get(indexMax).getPossibleValues().get(j).toString();
-						System.out.println(string); //we print the tree
-					}
+						return 0;
+					}					
 				}
+				
 			}
 		}
-		return 1;
+		return 0;
 	}
 	
-	public void calculateEntropyForChildAttribute(ArrayList<Attribute> array){
-
-
+	public void removeData(ArrayList<Attribute> tempArray, int attribute, int value){
+		for(int k = 0; k < tempArray.get(attribute).getValues().size(); k++){ //for each value corresponding of the current possible value
+			//k = the data
+			if(!tempArray.get(attribute).getValues().get(k).equals(tempArray.get(attribute).getPossibleValues().get(value))){ //if the data is different from the current value
+				//we remove the value in the new array for each attribute
+				for(int l = 0; l < tempArray.size(); l++){
+					tempArray.get(l).getValues().remove(k);								
+				}
+				k--;
+			}
+		}
+		//once we deleted the wrong data, we delete the current attribute
+		tempArray.remove(attribute);
+	}
+	
+	public void calculateGain(ArrayList<Attribute> tempArray, int attribute, int value){
+		for(int nextAttribute = 0; nextAttribute < tempArray.size() - 1; nextAttribute++){ //we calculate the entropy for each attribute
+			double p = 0; //number of positive values
+			double n = 0; //number of negative values
+			for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
+				if (tempArray.get(tempArray.size()-1).getValues().get(l).equals("P")){
+					p++; //if positive
+				} else {								
+					n++; //if negative
+				}
+			}
+			//we set the entropy of each attributes			
+			tempArray.get(nextAttribute).setEntropy(Reader.mathEntropy(p, n));
+			tempArray.get(nextAttribute).calculateGain(tempArray, p + n);	
+		}
+	}
+	
+	public int findBestGain(ArrayList<Attribute> tempArray, int attribute, int value){
+		double gainMax = -1;
+		int indexMax = -1;
+		for(int k= 0; k < tempArray.size()-1; k++){ //looking for the max entropy
+			if(tempArray.get(k).getEntropy() > gainMax){
+				indexMax = k;
+				gainMax = tempArray.get(k).getGain();
+			}
+		}
+		return indexMax;
+		
 	}
 	
 	public String toString(){
