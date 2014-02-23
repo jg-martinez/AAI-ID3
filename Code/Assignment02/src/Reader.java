@@ -42,10 +42,12 @@ public class Reader {
 	
 	public static void testLine(String line){
 		if(!line.startsWith("%") && !line.startsWith("@RELATION") && !line.isEmpty()){
+			line = line.replaceAll("\\s+", "");
 			String name = null;
 			String values = null;
-			if(line.startsWith("@ATTRIBUTE")){						
-				name = (String) line.subSequence(line.indexOf(" ") + 1, line.indexOf(" ", line.indexOf(" ") + 1));
+			if(line.startsWith("@ATTRIBUTE")){	
+				line = line.replaceAll("@ATTRIBUTE", "");
+				name = (String) line.subSequence(0, line.indexOf("{"));
 				values = (String) line.subSequence(line.indexOf("{")+1, line.indexOf("}"));
 				attributes.add(new Attribute(name,values));
 			}			
@@ -86,7 +88,7 @@ public class Reader {
 			}
 			//we set the entropy of each attributes			
 			attributes.get(currentAttribute).setEntropy(mathEntropy(classeCounter, total));
-			attributes.get(currentAttribute).calculateGain(attributes, total);			
+			attributes.get(currentAttribute).calculateGain(attributes, currentAttribute, total);			
 		}
 		
 		double gainMax = -1;
@@ -97,32 +99,50 @@ public class Reader {
 				gainMax = attributes.get(i).getGain();
 			}
 		}
-		//j= number of possible value for this attribute
-		for (int j = 0; j < attributes.get(indexMax).getPossibleValues().size(); j++){
-			String string = new String();
-			string += attributes.get(indexMax).getName() + " = ";
-			string += attributes.get(indexMax).getPossibleValues().get(j).toString() + " : ";
+		if(indexMax != -1) {
+			//for each value of the attribute with the max Gain
+			for(int j = 0; j < attributes.get(indexMax).getPossibleValues().size(); j++){
+				String string = new String();
+				string += attributes.get(indexMax).getName() + " = ";
+				string += attributes.get(indexMax).getPossibleValues().get(j).toString() + " : ";
 
-			int positive = 0;
-			int negative = 0;
-			//we check the number of positive and negative classes
-			for(int k = 0; k < attributes.get(attributes.size()-1).getValues().size(); k++){
-				if(attributes.get(indexMax).getValues().get(k).equals(attributes.get(indexMax).getPossibleValues().get(j))){
-					if(attributes.get(attributes.size()-1).getValues().get(k).equals("P")){//if we get a positive
-						positive++;
-					} else if(attributes.get(attributes.size()-1).getValues().get(k).equals("N")){//if we get a negative
-						negative++;
+				double[]classeCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
+				for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
+					classeCounter[k] = 0;
+				}
+				
+				//we check the class value
+				for(int k = 0; k < attributes.get(indexMax).getValues().size(); k++) { //we go through each line of data						
+					if(attributes.get(indexMax).getValues().get(k).equals(attributes.get(indexMax).getPossibleValues().get(j))){//if we get a positive
+						for(int classData = 0; classData < attributes.get(attributes.size()-1).getPossibleValues().size(); classData++){						
+							if(attributes.get(attributes.size()-1).getValues().get(k).equals(attributes.get(attributes.size()-1).getPossibleValues().get(classData))){//if we get a positive
+								classeCounter[classData]++;
+							}
+						}
 					}
 				}
+				boolean atLeastOneResult = false;
+				if(Attribute.noNeedToGoDeeper(classeCounter)){
+					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
+						//string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+						atLeastOneResult = true;
+					}
+					if(atLeastOneResult){
+						//string = string.substring(0, string.length()-2);
+						System.out.println(string); //we print the tree	
+					}
+				} else {
+					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
+						atLeastOneResult = true;
+						string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+					}
+					if(atLeastOneResult){
+						string = string.substring(0, string.length()-2);
+						System.out.println(string); //we print the tree	
+					}
+					attributes.get(indexMax).createNextAttributes(attributes, 1,j);						
+				}
 			}
-			if(positive == 0 || negative == 0){
-				string += "P = " + positive + " |  N = " + negative; //we print the tree
-				System.out.println(string); //we print the tree							
-			} else {
-				string += "P = " + positive + " |  N = " + negative; //we print the tree
-				System.out.println(string); //we print the tree
-				attributes.get(indexMax).createNextAttributes(attributes,1,j);						
-			}	
 		}
 		
 	}
@@ -139,7 +159,7 @@ public class Reader {
 	
 	
 	public static void main(String[] args) {
-		String path = "C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/Quilan.arff";//readPathOfFile();		
+		String path = "C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/soybean.arff";//readPathOfFile();		
 		if (checkArffExtension(path)){
 			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/Quilan.arff
 			calculateEntropyForRoot();		

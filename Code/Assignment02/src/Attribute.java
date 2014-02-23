@@ -67,17 +67,6 @@ public class Attribute {
 	}
 	
 	public int createNextAttributes(ArrayList<Attribute> array, int depth, int upperAttributeValue){		
-		if(array.get(array.size()-1).getValues().size() <= 0){
-			System.out.println("-1"); //we print the tree
-			return -1; //we return -1 if there is no more examples in this branch
-		}
-		
-		if(array.size() == 1){ //if the only attribute left is the class
-			System.out.println("-2"); //we print the tree
-			return -2;
-		}		
-		
-		//now we can go deeper
 		//we parse each values of the current attribute
 		for(int attribute = 0; attribute < array.size()-1; attribute++){  //i = the attribute
 			if(array.get(attribute).getName().equals(this.name)){//if we get the right attribute
@@ -100,38 +89,57 @@ public class Attribute {
 						for(int j = 0; j < tempArray.get(indexMax).getPossibleValues().size(); j++){
 							String string = new String();
 							for(int k = 0; k < depth; k++){
-								string += "\t";
+								string += " ";
 							}
 							string += tempArray.get(indexMax).getName() + " = ";
-							string += tempArray.get(indexMax).getPossibleValues().get(j).toString() + " : ";						
-							string += tempArray.get(indexMax).getGain() + " : ";
-
+							string += tempArray.get(indexMax).getPossibleValues().get(j).toString() + " : ";	
 
 							double[]classeCounter = new double[tempArray.get(tempArray.size()-1).getPossibleValues().size()];	
 							for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
 								classeCounter[k] = 0;
 							}
 							
-							//we check the number of positive and negative classes
-							for(int data = 0; data < tempArray.get(tempArray.size()-1).getValues().size(); data++){
-								if(tempArray.get(indexMax).getValues().get(data).equals(tempArray.get(indexMax).getPossibleValues().get(j))){
-									if(tempArray.get(tempArray.size()-1).getValues().get(data).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(data))){//if we get a positive
-										classeCounter[data]++;
+							//we check the class value
+							for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
+								if(tempArray.get(indexMax).getValues().get(l).equals(tempArray.get(indexMax).getPossibleValues().get(j))){
+									for(int classData = 0; classData < tempArray.get(tempArray.size()-1).getPossibleValues().size(); classData++){						
+										if(tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(classData))){//if we get a positive
+											classeCounter[classData]++;
+										}
 									}
 								}
 							}
+							boolean atLeastOneResult = false;
 							if(noNeedToGoDeeper(classeCounter)){
 								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
-									string += tempArray.get(tempArray.size()-1).getValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+									if(classeCounter[k] != 0){
+										atLeastOneResult = true;
+										//string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+									}
 								}
-								string = string.substring(0, string.length()-1);
-								System.out.println(string); //we print the tree	
+								if(atLeastOneResult){
+									//string = string.substring(0, string.length()-2);
+									System.out.println(string); //we print the tree	
+								}
 							} else {
 								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
-									string += tempArray.get(tempArray.size()-1).getValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+									if(classeCounter[k] != 0){
+										atLeastOneResult = true;
+										string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+									}
+								}								
+								if(tempArray.get(tempArray.size()-1).getValues().size() <= 0){ //no more data
+									//System.out.println("-1"); //we print the tree
+									return -1; //we return -1 if there is no more examples in this branch
 								}
-								string = string.substring(0, string.length()-1);
-								System.out.println(string); //we print the tree	
+								if(tempArray.size() == 1){ //if the only attribute left is the class
+									//System.out.println("-2"); //we print the tree
+									return -2;
+								}	
+								if(atLeastOneResult){
+									string = string.substring(0, string.length()-2);
+									System.out.println(string); //we print the tree	
+								}
 								tempArray.get(indexMax).createNextAttributes(tempArray, depth +1,j);						
 							}
 						}
@@ -144,7 +152,7 @@ public class Attribute {
 		return 0;
 	}
 	
-	public boolean noNeedToGoDeeper(double[] classe){
+	public static boolean noNeedToGoDeeper(double[] classe){
 		boolean tempResult = false;
 		for(int i = 0; i < classe.length; i++){
 			if(classe[i] != 0 && tempResult == false){
@@ -171,9 +179,27 @@ public class Attribute {
 		tempArray.remove(attribute);
 	}
 	
-	public void calculateGain(ArrayList<Attribute> tempArray, double total){
+	public void calculateGain(ArrayList<Attribute> tempArray, int currentAttribute, double total){
 		this.gain = this.entropy;
 		double[][] classe = new double[this.possibleValues.size()][tempArray.get(tempArray.size()-1).getPossibleValues().size()];		
+		for(int j = 0; j < this.possibleValues.size(); j++){
+			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+				classe[j][i] = 0;
+			}
+		}
+		
+		for(int j = 0; j < this.possibleValues.size(); j++){
+			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+				for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
+					if(tempArray.get(currentAttribute).getValues().get(l).equals(this.possibleValues.get(j))) {
+						if (tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
+							classe[j][i]++; //if positive
+						}
+					}
+				}
+			}
+		}	
+		
 		for(int i = 0; i < this.possibleValues.size(); i++){
 			double tempValue = 0;
 			for(int j = 0; j < tempArray.get(tempArray.size()-1).getPossibleValues().size(); j++){				
@@ -205,7 +231,7 @@ public class Attribute {
 			}
 			//we set the entropy of each attributes			
 			tempArray.get(nextAttribute).setEntropy(Reader.mathEntropy(classeCounter, total));
-			tempArray.get(nextAttribute).calculateGain(tempArray, total);	
+			tempArray.get(nextAttribute).calculateGain(tempArray, nextAttribute, total);	
 		}
 	}
 	
