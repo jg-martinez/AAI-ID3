@@ -102,10 +102,10 @@ public class Reader {
 		
 		if(indexMax != -1) {
 			//for each value of the attribute with the max Gain
-			for(int j = 0; j < attributes.get(indexMax).getPossibleValues().size(); j++){
+			for(int attribute = 0; attribute < attributes.get(indexMax).getPossibleValues().size(); attribute++){
 				String string = new String();
 				string += attributes.get(indexMax).getName() + " = ";
-				string += attributes.get(indexMax).getPossibleValues().get(j).toString() + " : ";
+				string += attributes.get(indexMax).getPossibleValues().get(attribute).toString() + " : ";
 
 				double[]maxAttributeClassCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
 				for(int classValue = 0; classValue < attributes.get(attributes.size()-1).getPossibleValues().size(); classValue++){
@@ -114,7 +114,7 @@ public class Reader {
 				
 
 				for(int attributeMaxValue = 0; attributeMaxValue < attributes.get(indexMax).getValues().size(); attributeMaxValue++) { //we go through each line of data						
-					if(attributes.get(indexMax).getValues().get(attributeMaxValue).equals(attributes.get(indexMax).getPossibleValues().get(j))){//if we get a positive
+					if(attributes.get(indexMax).getValues().get(attributeMaxValue).equals(attributes.get(indexMax).getPossibleValues().get(attribute))){//if we get a positive
 						for(int classValue = 0; classValue < attributes.get(attributes.size()-1).getPossibleValues().size(); classValue++){						
 							if(attributes.get(attributes.size()-1).getValues().get(attributeMaxValue).equals(attributes.get(attributes.size()-1).getPossibleValues().get(classValue))){//if we get a positive
 								maxAttributeClassCounter[classValue]++;
@@ -124,23 +124,18 @@ public class Reader {
 				}
 				
 				boolean atLeastOneResult = false;
-				if(Attribute.noNeedToGoDeeper(maxAttributeClassCounter)){
+				if(Attribute.noNeedToGoDeeper(maxAttributeClassCounter)){ 
 					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
 						string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + maxAttributeClassCounter[k] + " | ";
 						atLeastOneResult = true;
 					}
 					if(atLeastOneResult){
 						string = string.substring(0, string.length()-2);
-						System.out.println(string); //we print the tree	
+						System.out.println(string); //we print the current attribute	
 					}
-				} else {
-					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
-						if(maxAttributeClassCounter[k] != 0){
-							atLeastOneResult = true;
-						}
-					}
-					System.out.println(string); //we print the tree	
-					attributes.get(indexMax).createNextAttributes(attributes, 1,j);						
+				} else { //if we have to go deeper in the tree
+					System.out.println(string); //we print the current attribute	
+					attributes.get(indexMax).createNextAttributes(attributes, 1,attribute);	//we created the next node					
 				}
 			}
 		}

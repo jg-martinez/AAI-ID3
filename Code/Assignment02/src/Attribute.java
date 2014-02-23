@@ -66,15 +66,17 @@ public class Attribute {
 	public int createNextAttributes(ArrayList<Attribute> array, int depth, int upperAttributeValue){		
 		//we parse each values of the current attribute
 		for(int attribute = 0; attribute < array.size()-1; attribute++){  //i = the attribute
-			if(array.get(attribute).getName().equals(this.name)){//if we get the right attribute
-				for (int value = 0; value < array.get(attribute).getPossibleValues().size(); value++){ //for each possible value, we go deeper in the tree
-					// j = the possible value
+			if(array.get(attribute).getName().equals(this.name)){//if we get the right attribute, we parse its values
+				for (int value = 0; value < array.get(attribute).getPossibleValues().size(); value++){ 
+					
+					//for each possible value, we go deeper in the tree
 					ArrayList<Attribute> tempArray = new ArrayList<Attribute>();
 					for(int k = 0; k < array.size(); k++){ //we duplicate the attributes array in a new array
 						tempArray.add(new Attribute(array.get(k)));
 					}
-						
-					removeData(tempArray, attribute, upperAttributeValue); //delete the data which have nothing to do with the value of the current attribute
+					
+					//delete the data which have nothing to do with the value of the current attribute
+					removeData(tempArray, attribute, upperAttributeValue); 
 					
 					parseTempArray(tempArray);
 					
@@ -97,10 +99,10 @@ public class Attribute {
 							}
 							
 							//we check the class value
-							for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
-								if(tempArray.get(indexMax).getValues().get(l).equals(tempArray.get(indexMax).getPossibleValues().get(j))){
+							for(int dataLine = 0; dataLine < tempArray.get(tempArray.size()-1).getValues().size(); dataLine++) { //we go through each line of data
+								if(tempArray.get(indexMax).getValues().get(dataLine).equals(tempArray.get(indexMax).getPossibleValues().get(j))){
 									for(int classData = 0; classData < tempArray.get(tempArray.size()-1).getPossibleValues().size(); classData++){						
-										if(tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(classData))){//if we get a positive
+										if(tempArray.get(tempArray.size()-1).getValues().get(dataLine).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(classData))){//if we get a positive
 											classeCounter[classData]++;
 										}
 									}
@@ -114,29 +116,18 @@ public class Attribute {
 										string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
 									}
 								}
-								if(atLeastOneResult){
+								if(atLeastOneResult){ //if this attribute value has no class result we don't print it
 									string = string.substring(0, string.length()-2);
-									System.out.println(string); //we print the tree	
+									System.out.println(string); //we print the current attribute	
 								}
-							} else {
-								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
-									if(classeCounter[k] != 0){
-										atLeastOneResult = true;
-										//string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
-									}
-								}								
+							} else {  //if we have to go deeper in the tree							
 								if(tempArray.get(tempArray.size()-1).getValues().size() <= 0){ //no more data
-									//System.out.println("-1"); //we print the tree
-									return -1; //we return -1 if there is no more examples in this branch
+									return -1; //we leave the function
 								}
 								if(tempArray.size() == 1){ //if the only attribute left is the class
-									//System.out.println("-2"); //we print the tree
-									return -2;
+									return -1; //we leave the function
 								}	
-								if(atLeastOneResult){
-									//string = string.substring(0, string.length()-2);
-									System.out.println(string); //we print the tree	
-								}
+								System.out.println(string); //we print the the current attribute	
 								tempArray.get(indexMax).createNextAttributes(tempArray, depth +1,j);						
 							}
 						}
@@ -163,7 +154,6 @@ public class Attribute {
 	
 	public void removeData(ArrayList<Attribute> tempArray, int attribute, int value){
 		for(int k = 0; k < tempArray.get(attribute).getValues().size(); k++){ //for each value corresponding of the current possible value
-			//k = the data
 			if(!tempArray.get(attribute).getValues().get(k).equals(tempArray.get(attribute).getPossibleValues().get(value))){ //if the data is different from the current value
 				//we remove the value in the new array for each attribute
 				for(int l = 0; l < tempArray.size(); l++){
@@ -178,26 +168,25 @@ public class Attribute {
 	
 	public void calculateGain(ArrayList<Attribute> tempArray, int currentAttribute, double total){
 		this.gain = this.entropy;
+		//[number of possible attribute value][number of possible class value]
 		double[][] classe = new double[this.possibleValues.size()][tempArray.get(tempArray.size()-1).getPossibleValues().size()];		
-		for(int j = 0; j < this.possibleValues.size(); j++){
-			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
-				classe[j][i] = 0;
-			}
-		}
 		
-		for(int j = 0; j < this.possibleValues.size(); j++){
-			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
-				for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
-					if(tempArray.get(currentAttribute).getValues().get(l).equals(this.possibleValues.get(j))) {
-						if (tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
+		for(int j = 0; j < this.possibleValues.size(); j++){ //possible attribute value
+			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){ //possible class value
+				classe[j][i] = 0; //initialization
+				
+				for(int dataLine = 0; dataLine < tempArray.get(tempArray.size()-1).getValues().size(); dataLine++) { //we go through each line of data
+					if(tempArray.get(currentAttribute).getValues().get(dataLine).equals(this.possibleValues.get(j))) {
+						if (tempArray.get(tempArray.size()-1).getValues().get(dataLine).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
 							classe[j][i]++; //if positive
 						}
 					}
 				}
+				
 			}
 		}	
 		
-		for(int i = 0; i < this.possibleValues.size(); i++){
+		for(int i = 0; i < this.possibleValues.size(); i++){ //we calculate the gain for each value of the current attribute
 			double tempValue = 0;
 			for(int j = 0; j < tempArray.get(tempArray.size()-1).getPossibleValues().size(); j++){				
 				tempValue+= classe[i][j];				
@@ -210,18 +199,20 @@ public class Attribute {
 	}
 	
 	public void parseTempArray(ArrayList<Attribute> tempArray){
-		for(int nextAttribute = 0; nextAttribute < tempArray.size() - 1; nextAttribute++){ //we calculate the entropy for each attribute
+		for(int nextAttribute = 0; nextAttribute < tempArray.size() - 1; nextAttribute++){
+			//we calculate for the currentAttribute the number of each class value
 			double[]classeCounter = new double[tempArray.get(tempArray.size()-1).getPossibleValues().size()];	
-			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
-				classeCounter[i] = 0;
-			}
+			//size = number of different value of class
+			
 			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+				classeCounter[i] = 0;
 				for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
 					if (tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
-						classeCounter[i]++; //if positive
+						classeCounter[i]++;
 					}
 				}
 			}
+			
 			double total = 0;
 			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
 				total += classeCounter[i];
