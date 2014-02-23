@@ -30,9 +30,6 @@ public class Attribute {
 		this.possibleValues.add(tempValue);	
 	}
 	
-	
-	
-	
 	public double getGain(){
 		return this.gain;
 	}

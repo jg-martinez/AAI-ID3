@@ -67,24 +67,27 @@ public class Reader {
 	}
 	
 	public static void calculateEntropyForRoot() {
-		for(int currentAttribute = 0; currentAttribute < attributes.size()-1; currentAttribute++) { //we exclude the last attribute (the class)
-			double[]classeCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
-			for(int i = 0; i < attributes.get(attributes.size()-1).getPossibleValues().size(); i++){
-				classeCounter[i] = 0;
-			}
+		for(int currentAttribute = 0; currentAttribute < attributes.size()-1; currentAttribute++) {			
+			//we calculate for the currentAttribute the number of each class value
+			double[]classCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
+			//size = number of different value of class
+			
 			for(int i = 0; i <  attributes.get(attributes.size()-1).getPossibleValues().size(); i++){
+				classCounter[i] = 0; //first we initialize
 				for(int l = 0; l < attributes.get(attributes.size()-1).getValues().size(); l++) { //we go through each line of data
 					if (attributes.get(attributes.size()-1).getValues().get(l).equals(attributes.get(attributes.size()-1).getPossibleValues().get(i))){
-						classeCounter[i]++; //if positive
+						classCounter[i]++;
+						//we check all the data line on each class data 
 					}
 				}
 			}
+			
 			double total = 0;
 			for(int i = 0; i < attributes.get(attributes.size()-1).getPossibleValues().size(); i++){
-				total += classeCounter[i];
+				total += classCounter[i];
 			}
-			//we set the entropy of each attributes			
-			attributes.get(currentAttribute).setEntropy(mathEntropy(classeCounter, total));
+			//we calculate the entropy and the gain			
+			attributes.get(currentAttribute).setEntropy(mathEntropy(classCounter, total));
 			attributes.get(currentAttribute).calculateGain(attributes, currentAttribute, total);			
 		}
 		
@@ -96,6 +99,7 @@ public class Reader {
 				gainMax = attributes.get(i).getGain();
 			}
 		}
+		
 		if(indexMax != -1) {
 			//for each value of the attribute with the max Gain
 			for(int j = 0; j < attributes.get(indexMax).getPossibleValues().size(); j++){
@@ -103,25 +107,26 @@ public class Reader {
 				string += attributes.get(indexMax).getName() + " = ";
 				string += attributes.get(indexMax).getPossibleValues().get(j).toString() + " : ";
 
-				double[]classeCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
-				for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
-					classeCounter[k] = 0;
+				double[]maxAttributeClassCounter = new double[attributes.get(attributes.size()-1).getPossibleValues().size()];	
+				for(int classValue = 0; classValue < attributes.get(attributes.size()-1).getPossibleValues().size(); classValue++){
+					maxAttributeClassCounter[classValue] = 0;
 				}
 				
-				//we check the class value
-				for(int k = 0; k < attributes.get(indexMax).getValues().size(); k++) { //we go through each line of data						
-					if(attributes.get(indexMax).getValues().get(k).equals(attributes.get(indexMax).getPossibleValues().get(j))){//if we get a positive
-						for(int classData = 0; classData < attributes.get(attributes.size()-1).getPossibleValues().size(); classData++){						
-							if(attributes.get(attributes.size()-1).getValues().get(k).equals(attributes.get(attributes.size()-1).getPossibleValues().get(classData))){//if we get a positive
-								classeCounter[classData]++;
+
+				for(int attributeMaxValue = 0; attributeMaxValue < attributes.get(indexMax).getValues().size(); attributeMaxValue++) { //we go through each line of data						
+					if(attributes.get(indexMax).getValues().get(attributeMaxValue).equals(attributes.get(indexMax).getPossibleValues().get(j))){//if we get a positive
+						for(int classValue = 0; classValue < attributes.get(attributes.size()-1).getPossibleValues().size(); classValue++){						
+							if(attributes.get(attributes.size()-1).getValues().get(attributeMaxValue).equals(attributes.get(attributes.size()-1).getPossibleValues().get(classValue))){//if we get a positive
+								maxAttributeClassCounter[classValue]++;
 							}
 						}
 					}
 				}
+				
 				boolean atLeastOneResult = false;
-				if(Attribute.noNeedToGoDeeper(classeCounter)){
+				if(Attribute.noNeedToGoDeeper(maxAttributeClassCounter)){
 					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
-						string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+						string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + maxAttributeClassCounter[k] + " | ";
 						atLeastOneResult = true;
 					}
 					if(atLeastOneResult){
@@ -130,15 +135,11 @@ public class Reader {
 					}
 				} else {
 					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
-						if(classeCounter[k] != 0){
+						if(maxAttributeClassCounter[k] != 0){
 							atLeastOneResult = true;
-							//string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
 						}
 					}
-					if(atLeastOneResult){
-						//string = string.substring(0, string.length()-2);
-						System.out.println(string); //we print the tree	
-					}
+					System.out.println(string); //we print the tree	
 					attributes.get(indexMax).createNextAttributes(attributes, 1,j);						
 				}
 			}
@@ -146,11 +147,11 @@ public class Reader {
 		
 	}
 	
-	public static double mathEntropy(double[] classe, double total) {
+	public static double mathEntropy(double[] c, double total) { //calculate the entropy from the class
 		double result = 0;
-		for(int i = 0; i < classe.length; i++){
-			if(classe[i] != 0){
-				result -= (classe[i]/total)*(Math.log(classe[i]/total)/Math.log(2));
+		for(int i = 0; i < c.length; i++){
+			if(c[i] != 0){
+				result -= (c[i]/total)*(Math.log(c[i]/total)/Math.log(2));
 			}
 		}
 		return result;
@@ -158,7 +159,7 @@ public class Reader {
 	
 	
 	public static void main(String[] args) {
-		String path = readPathOfFile();		
+		String path = "C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/soybean.arff";		
 		if (checkArffExtension(path)){
 			readFile(path); //"C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/soybean.arff"
 			calculateEntropyForRoot();		
