@@ -8,7 +8,6 @@ import java.util.Scanner;
 public class Reader {	
 	static ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 	static boolean canReadData = false;
-	static int dataSize;
 	
 	public static boolean checkArffExtension(String string) {
 		return string.contains(".arff");
@@ -30,7 +29,6 @@ public class Reader {
 			e1.printStackTrace();
 		}
 		String line = null;
-		dataSize = 0;
 		try {
 			while ((line = reader.readLine()) != null) {
 				testLine(line);
@@ -42,7 +40,7 @@ public class Reader {
 	
 	public static void testLine(String line){
 		if(!line.startsWith("%") && !line.startsWith("@RELATION") && !line.isEmpty()){
-			line = line.replaceAll("\\s+", "");
+			line = line.replaceAll("\\s+", ""); //we remove spaces and \t
 			String name = null;
 			String values = null;
 			if(line.startsWith("@ATTRIBUTE")){	
@@ -61,7 +59,6 @@ public class Reader {
 					}
 					i++;
 				}
-				dataSize++;
 			}
 			if(line.startsWith("@DATA")){
 				canReadData = true;
@@ -124,20 +121,22 @@ public class Reader {
 				boolean atLeastOneResult = false;
 				if(Attribute.noNeedToGoDeeper(classeCounter)){
 					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
-						//string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+						string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
 						atLeastOneResult = true;
 					}
 					if(atLeastOneResult){
-						//string = string.substring(0, string.length()-2);
+						string = string.substring(0, string.length()-2);
 						System.out.println(string); //we print the tree	
 					}
 				} else {
 					for(int k = 0; k < attributes.get(attributes.size()-1).getPossibleValues().size(); k++){
-						atLeastOneResult = true;
-						string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+						if(classeCounter[k] != 0){
+							atLeastOneResult = true;
+							//string += attributes.get(attributes.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+						}
 					}
 					if(atLeastOneResult){
-						string = string.substring(0, string.length()-2);
+						//string = string.substring(0, string.length()-2);
 						System.out.println(string); //we print the tree	
 					}
 					attributes.get(indexMax).createNextAttributes(attributes, 1,j);						
@@ -159,9 +158,9 @@ public class Reader {
 	
 	
 	public static void main(String[] args) {
-		String path = "C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/soybean.arff";//readPathOfFile();		
+		String path = readPathOfFile();		
 		if (checkArffExtension(path)){
-			readFile(path); //C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/Quilan.arff
+			readFile(path); //"C:/Users/Tywuz/Documents/GitHub/AAI-ID3/WEKA_Format_Files/soybean.arff"
 			calculateEntropyForRoot();		
 		} else System.out.println("File doesn't have a .arff extension");
 		}

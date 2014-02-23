@@ -114,18 +114,18 @@ public class Attribute {
 								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
 									if(classeCounter[k] != 0){
 										atLeastOneResult = true;
-										//string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+										string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
 									}
 								}
 								if(atLeastOneResult){
-									//string = string.substring(0, string.length()-2);
+									string = string.substring(0, string.length()-2);
 									System.out.println(string); //we print the tree	
 								}
 							} else {
 								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
 									if(classeCounter[k] != 0){
 										atLeastOneResult = true;
-										string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
+										//string += tempArray.get(tempArray.size()-1).getPossibleValues().get(k).toString() + " = " + classeCounter[k] + " | ";
 									}
 								}								
 								if(tempArray.get(tempArray.size()-1).getValues().size() <= 0){ //no more data
@@ -137,7 +137,7 @@ public class Attribute {
 									return -2;
 								}	
 								if(atLeastOneResult){
-									string = string.substring(0, string.length()-2);
+									//string = string.substring(0, string.length()-2);
 									System.out.println(string); //we print the tree	
 								}
 								tempArray.get(indexMax).createNextAttributes(tempArray, depth +1,j);						
