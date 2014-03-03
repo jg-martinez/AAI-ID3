@@ -39,12 +39,13 @@ public class Reader {
 	}
 	
 	public static void testLine(String line){
-		if(!line.startsWith("%") && !line.startsWith("@RELATION") && !line.isEmpty()){
+		if(!line.startsWith("%") && !line.startsWith("@relation") && !line.isEmpty()){
 			line = line.replaceAll("\\s+", ""); //we remove spaces and \t
 			String name = null;
 			String values = null;
-			if(line.startsWith("@ATTRIBUTE")){	
-				line = line.replaceAll("@ATTRIBUTE", "");
+			line = line.toLowerCase();
+			if(line.startsWith("@attribute")){	
+				line = line.replaceAll("@attribute", "");
 				name = (String) line.subSequence(0, line.indexOf("{"));
 				values = (String) line.subSequence(line.indexOf("{")+1, line.indexOf("}"));
 				attributes.add(new Attribute(name,values));
@@ -60,7 +61,7 @@ public class Reader {
 					i++;
 				}
 			}
-			if(line.startsWith("@DATA")){
+			if(line.startsWith("@data")){
 				canReadData = true;
 			}
 		} 
@@ -156,7 +157,7 @@ public class Reader {
 	public static void main(String[] args) {
 		String path = readPathOfFile();				
 		if (checkArffExtension(path)){
-			readFile(path);
+			readFile(path); //C:\Users\Tywuz\Documents\GitHub\AAI-ID3\WEKA_Format_Files\weather.nominal.arff
 			calculateEntropyForRoot();		
 		} else System.out.println("File doesn't have a .arff extension");
 		}
