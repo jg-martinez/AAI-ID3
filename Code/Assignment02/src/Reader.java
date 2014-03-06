@@ -187,7 +187,7 @@ public class Reader {
 	public static void main(String[] args) {
 		String path = readPathOfFile();				
 		if (checkArffExtension(path)){
-			readFile(path); //C:\Users\Tywuz\Documents\GitHub\AAI-ID3\WEKA_Format_Files\weather.nominal.arff
+			readFile(path);
 			buildTree();		
 		} else System.out.println("File doesn't have a .arff extension");
 		}
