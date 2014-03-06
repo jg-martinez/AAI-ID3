@@ -30,10 +30,6 @@ public class Attribute {
 		this.possibleValues.add(tempValue);	
 	}
 	
-	public double getGain(){
-		return this.gain;
-	}
-	
 	@SuppressWarnings("unchecked")
 	public Attribute(Attribute a){
 		this.name = a.name;
@@ -41,31 +37,16 @@ public class Attribute {
 		this.values = (ArrayList<String>) a.values.clone();
 		this.entropy = a.entropy;		
 		this.gain = a.gain;
-	}
-	
-	public String getName(){
-		return this.name;
-	}
-	
-	public ArrayList<String> getPossibleValues(){
-		return this.possibleValues;
-	}
-	
-	public ArrayList<String> getValues(){
-		return this.values;
-	}
-	
-	public void setEntropy(double value) {
-		this.entropy = value; 
 	}	
-	
-	public double getEntropy(){
-		return this.entropy;
-	}
-	
+
 	public int createNextAttributes(ArrayList<Attribute> array, int depth, int upperAttributeValue){		
+		int nbAttribute = array.size()-1; //index of the class
+		int nbClassValues = array.get(nbAttribute).getPossibleValues().size(); //number of possible class values
+		int nbDataLine = array.get(nbAttribute).getValues().size(); //we take the number of data available
+		
+		
 		//we parse each values of the current attribute
-		for(int attribute = 0; attribute < array.size()-1; attribute++){  //i = the attribute
+		for(int attribute = 0; attribute < nbAttribute; attribute++){  //i = the attribute
 			if(array.get(attribute).getName().equals(this.name)){//if we get the right attribute, we parse its values
 				for (int value = 0; value < array.get(attribute).getPossibleValues().size(); value++){ 
 					
@@ -81,7 +62,7 @@ public class Attribute {
 					parseTempArray(tempArray);
 					
 					//now we can check, with this new set of data, which entropy is maximum	
-					int indexMax = findBestGain(tempArray, attribute, value);
+					int indexMax = Reader.getIndexAttributeMaxGain(tempArray);
 					
 					if(indexMax != -1) {
 						//for each value of the attribute with the max Gain
@@ -92,7 +73,7 @@ public class Attribute {
 							}
 							string += tempArray.get(indexMax).getName() + " = ";
 							string += tempArray.get(indexMax).getPossibleValues().get(j).toString() + " : ";	
-
+	
 							double[]classeCounter = new double[tempArray.get(tempArray.size()-1).getPossibleValues().size()];	
 							for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
 								classeCounter[k] = 0;
@@ -109,7 +90,7 @@ public class Attribute {
 								}
 							}
 							boolean atLeastOneResult = false;
-							if(noNeedToGoDeeper(classeCounter)){
+							if(Reader.noNeedToGoDeeper(classeCounter)){
 								for(int k = 0; k < tempArray.get(tempArray.size()-1).getPossibleValues().size(); k++){
 									if(classeCounter[k] != 0){
 										atLeastOneResult = true;
@@ -139,19 +120,7 @@ public class Attribute {
 		}
 		return 0;
 	}
-	
-	public static boolean noNeedToGoDeeper(double[] classe){
-		boolean tempResult = false;
-		for(int i = 0; i < classe.length; i++){
-			if(classe[i] != 0 && tempResult == false){
-				tempResult = true;
-			} else if (classe[i] != 0 && tempResult == true){
-				return false;
-			}
-		}
-		return true;
-	}
-	
+
 	public void removeData(ArrayList<Attribute> tempArray, int attribute, int value){
 		for(int k = 0; k < tempArray.get(attribute).getValues().size(); k++){ //for each value corresponding of the current possible value
 			if(!tempArray.get(attribute).getValues().get(k).equals(tempArray.get(attribute).getPossibleValues().get(value))){ //if the data is different from the current value
@@ -165,48 +134,20 @@ public class Attribute {
 		//once we deleted the wrong data, we delete the current attribute
 		tempArray.remove(attribute);
 	}
-	
-	public void calculateGain(ArrayList<Attribute> tempArray, int currentAttribute, double total){
-		this.gain = this.entropy;
-		//[number of possible attribute value][number of possible class value]
-		double[][] classe = new double[this.possibleValues.size()][tempArray.get(tempArray.size()-1).getPossibleValues().size()];		
-		
-		for(int j = 0; j < this.possibleValues.size(); j++){ //possible attribute value
-			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){ //possible class value
-				classe[j][i] = 0; //initialization
-				
-				for(int dataLine = 0; dataLine < tempArray.get(tempArray.size()-1).getValues().size(); dataLine++) { //we go through each line of data
-					if(tempArray.get(currentAttribute).getValues().get(dataLine).equals(this.possibleValues.get(j))) {
-						if (tempArray.get(tempArray.size()-1).getValues().get(dataLine).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
-							classe[j][i]++; //if positive
-						}
-					}
-				}
-				
-			}
-		}	
-		
-		for(int i = 0; i < this.possibleValues.size(); i++){ //we calculate the gain for each value of the current attribute
-			double tempValue = 0;
-			for(int j = 0; j < tempArray.get(tempArray.size()-1).getPossibleValues().size(); j++){				
-				tempValue+= classe[i][j];				
-			}
-			if(tempValue != 0){
-				this.gain -= (tempValue/total)*Reader.mathEntropy(classe[i],tempValue);
-			}				
-		}
 
-	}
-	
 	public void parseTempArray(ArrayList<Attribute> tempArray){
-		for(int nextAttribute = 0; nextAttribute < tempArray.size() - 1; nextAttribute++){
+		int nbAttribute = tempArray.size()-1; //index of the class
+		int nbClassValues = tempArray.get(nbAttribute).getPossibleValues().size(); //number of possible class values
+		int nbDataLine = tempArray.get(nbAttribute).getValues().size(); //we take the number of data available
+		
+		for(int nextAttribute = 0; nextAttribute < nbAttribute; nextAttribute++){
 			//we calculate for the currentAttribute the number of each class value
-			double[]classeCounter = new double[tempArray.get(tempArray.size()-1).getPossibleValues().size()];	
+			double[]classeCounter = new double[nbClassValues];	
 			//size = number of different value of class
 			
-			for(int i = 0; i <  tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+			for(int i = 0; i < nbClassValues; i++){
 				classeCounter[i] = 0;
-				for(int l = 0; l < tempArray.get(tempArray.size()-1).getValues().size(); l++) { //we go through each line of data
+				for(int l = 0; l < nbDataLine; l++) { //we go through each line of data
 					if (tempArray.get(tempArray.size()-1).getValues().get(l).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(i))){
 						classeCounter[i]++;
 					}
@@ -214,7 +155,7 @@ public class Attribute {
 			}
 			
 			double total = 0;
-			for(int i = 0; i < tempArray.get(tempArray.size()-1).getPossibleValues().size(); i++){
+			for(int i = 0; i < nbClassValues; i++){
 				total += classeCounter[i];
 			}
 			//we set the entropy of each attributes			
@@ -222,18 +163,64 @@ public class Attribute {
 			tempArray.get(nextAttribute).calculateGain(tempArray, nextAttribute, total);	
 		}
 	}
-	
-	public int findBestGain(ArrayList<Attribute> tempArray, int attribute, int value){
-		double gainMax = -1;
-		int indexMax = -1;
-		for(int k= 0; k < tempArray.size()-1; k++){ //looking for the max entropy
-			if(tempArray.get(k).getEntropy() > gainMax){
-				indexMax = k;
-				gainMax = tempArray.get(k).getGain();
+
+	public void calculateGain(ArrayList<Attribute> tempArray, int currentAttribute, double total){
+		this.gain = this.entropy;
+		int nbAttribute = tempArray.size()-1; //index of the class
+		int nbClassValues = tempArray.get(nbAttribute).getPossibleValues().size(); //number of possible class values
+		int nbDataLine = tempArray.get(nbAttribute).getValues().size(); //we take the number of data available
+		
+		//[number of possible attribute value][number of possible class value]
+		double[][] classCounter = new double[this.possibleValues.size()][nbClassValues];		
+		
+		for(int j = 0; j < this.possibleValues.size(); j++){ //possible attribute value
+			for(int possibleClassValue = 0; possibleClassValue <  nbClassValues; possibleClassValue++){ //possible class value
+				classCounter[j][possibleClassValue] = 0; //initialization				
+				for(int dataLine = 0; dataLine < nbDataLine; dataLine++) { //we go through each line of data
+					if(tempArray.get(currentAttribute).getValues().get(dataLine).equals(this.possibleValues.get(j))) {
+						if (tempArray.get(tempArray.size()-1).getValues().get(dataLine).equals(tempArray.get(tempArray.size()-1).getPossibleValues().get(possibleClassValue))){
+							classCounter[j][possibleClassValue]++;
+						}
+					}
+				}				
 			}
+		}	
+		//each possible attribute value has a class counter for each possible class value
+		for(int i = 0; i < this.possibleValues.size(); i++){ //we calculate the gain for each value of the current attribute
+			double tempValue = 0;
+			for(int j = 0; j < nbClassValues; j++){				
+				tempValue+= classCounter[i][j];				
+			}
+			if(tempValue != 0){
+				this.gain -= (tempValue/total)*Reader.mathEntropy(classCounter[i],tempValue);
+			}				
 		}
-		return indexMax;		
+	
 	}
+
+	public double getGain(){
+		return this.gain;
+	}
+	
+	public String getName(){
+		return this.name;
+	}
+	
+	public ArrayList<String> getPossibleValues(){
+		return this.possibleValues;
+	}
+	
+	public ArrayList<String> getValues(){
+		return this.values;
+	}
+	
+	public double getEntropy(){
+		return this.entropy;
+	}
+
+	public void setEntropy(double value) {
+		this.entropy = value; 
+	}	
 	
 	public String toString(){
 		String string = new String();
