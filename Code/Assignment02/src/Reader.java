@@ -68,8 +68,7 @@ public class Reader {
 	}
 	
 	public static void buildTree() {		
-		calculateEntropyAndGain(attributes);	
-		
+		analyseClass(attributes);			
 		int indexMax = getIndexAttributeMaxGain(attributes);
 		
 		if(indexMax != -1) {
@@ -146,13 +145,13 @@ public class Reader {
 		return indexMax;
 	}
 	
-	public static void calculateEntropyAndGain(ArrayList<Attribute> arrayOfAttributes){
+	public static void analyseClass(ArrayList<Attribute> arrayOfAttributes){
 		int nbAttribute = arrayOfAttributes.size()-1; //index of the class
 		int nbClassValues = arrayOfAttributes.get(nbAttribute).getPossibleValues().size(); //number of possible class values
 		int nbDataLine = arrayOfAttributes.get(nbAttribute).getValues().size(); //we take the number of data available
 		
 		for(int currentAttribute = 0; currentAttribute < nbAttribute; currentAttribute++) {				
-			double[]classCounter = new double[nbClassValues];	
+			double[] classCounter = new double[nbClassValues];	
 			
 			for(int i = 0; i < nbClassValues; i++){ //for each class value
 				classCounter[i] = 0; //first we initialize the counter of this class value				
@@ -163,15 +162,18 @@ public class Reader {
 					}
 				}
 			}
-			
-			double total = 0;
-			for(int i = 0; i < nbClassValues; i++){ //sum the number of values
-				total += classCounter[i];
-			}
-			//we calculate the entropy and the gain	for the current Attribute		
-			arrayOfAttributes.get(currentAttribute).setEntropy(mathEntropy(classCounter, total));
-			arrayOfAttributes.get(currentAttribute).calculateGain(arrayOfAttributes, currentAttribute, total);			
+			calculateEntropyAndGain(arrayOfAttributes, nbClassValues, classCounter, currentAttribute);					
 		}
+	}
+	
+	public static void calculateEntropyAndGain(ArrayList<Attribute> arrayOfAttributes, int nbClassValues, double[] classCounter, int currentAttribute){
+		double total = 0;
+		for(int i = 0; i < nbClassValues; i++){ //sum the number of values
+			total += classCounter[i];
+		}
+		//we calculate the entropy and the gain	for the current Attribute		
+		arrayOfAttributes.get(currentAttribute).setEntropy(mathEntropy(classCounter, total));
+		arrayOfAttributes.get(currentAttribute).calculateGain(arrayOfAttributes, currentAttribute, total);	
 	}
 	
 	public static double mathEntropy(double[] c, double total) { //calculate the entropy from the class
