@@ -14,7 +14,7 @@ public class Reader {
 	}
 
 	public static String readPathOfFile () {
-		System.out.println("Write path to ARFF format file: \n");
+		System.out.println("Write path to ARFF format file:");
 		Scanner sc = new Scanner(System.in);
 		String path = sc.next();
 		sc.close();
@@ -69,11 +69,9 @@ public class Reader {
 	
 	public static void buildTree() {		
 		analyseClass(attributes);			
-		int indexMax = getIndexAttributeMaxGain(attributes);
-		
+		int indexMax = getIndexAttributeMaxGain(attributes);		
 		if(indexMax != -1) {
-			goDeeperFromRoot(attributes,indexMax);
-			//for each value of the attribute with the max Gain			
+			goDeeperFromRoot(attributes,indexMax);	
 		}
 		
 	}
@@ -82,23 +80,21 @@ public class Reader {
 		int nbAttribute = arrayOfAttributes.size()-1;
 		int nbPossibleValue = arrayOfAttributes.get(indexMax).getPossibleValues().size();
 		int nbClassValues = arrayOfAttributes.get(nbAttribute).getPossibleValues().size(); //number of possible class values
-		int nbDataLine = arrayOfAttributes.get(nbAttribute).getValues().size(); //we take the number of data available
+		int nbDataLine = arrayOfAttributes.get(nbAttribute).getValues().size(); //we take the number of data available			
 		
-		
-		//for each value of this attribute		
-		for(int attributeValue = 0; attributeValue < nbPossibleValue; attributeValue++){
+		for(int value = 0; value < nbPossibleValue; value++){ //for each value of this attribute
 			//we print the name of the attribute and its current value
 			String string = new String();
 			string += arrayOfAttributes.get(indexMax).getName() + " = ";
-			string += arrayOfAttributes.get(indexMax).getPossibleValues().get(attributeValue).toString() + " : ";
+			string += arrayOfAttributes.get(indexMax).getPossibleValues().get(value).toString() + " : ";
 
 			double[]classCounter = new double[nbClassValues];	
-			for(int classValue = 0; classValue < arrayOfAttributes.get(nbAttribute).getPossibleValues().size(); classValue++){
+			for(int classValue = 0; classValue < nbClassValues; classValue++){
 				classCounter[classValue] = 0;
 			}
 			
 			for(int data = 0; data < nbDataLine; data++) { //we go through each line of data						
-				if(arrayOfAttributes.get(indexMax).getValues().get(data).equals(arrayOfAttributes.get(indexMax).getPossibleValues().get(attributeValue))){
+				if(arrayOfAttributes.get(indexMax).getValues().get(data).equals(arrayOfAttributes.get(indexMax).getPossibleValues().get(value))){
 					//if this data is equal to the current possible value
 					for(int classValue = 0; classValue < nbClassValues; classValue++){	 //we check at which class this data belongs					
 						if(arrayOfAttributes.get(nbAttribute).getValues().get(data).equals(arrayOfAttributes.get(nbAttribute).getPossibleValues().get(classValue))){
@@ -110,23 +106,26 @@ public class Reader {
 			
 			if(noNeedToGoDeeper(classCounter)){ //do we print plurality value/class value or not (are we at the end of the tree...)
 				for(int k = 0; k < nbClassValues; k++){
-					string += arrayOfAttributes.get(nbAttribute).getPossibleValues().get(k).toString() + " = " + classCounter[k] + " | ";
+					if(classCounter[k] != 0){
+						string += arrayOfAttributes.get(nbAttribute).getPossibleValues().get(k).toString() + " = " + classCounter[k] + " | ";
+					}
 				}
 				string = string.substring(0, string.length()-2);
 				System.out.println(string); //we print the current attribute	
 			} else { //if we have to go deeper in the tree
 				System.out.println(string); //we print the current attribute	
-				arrayOfAttributes.get(indexMax).createNextAttributes(arrayOfAttributes, 1,attributeValue); //we created the next node					
+				arrayOfAttributes.get(indexMax).createNextAttributes(arrayOfAttributes, 1,value); //we created the next node					
 			}
 		}
 	}
 	
 	public static boolean noNeedToGoDeeper(double[] classe){
 		boolean tempResult = false;
+		//we check if there are more than one class value
 		for(int i = 0; i < classe.length; i++){
 			if(classe[i] != 0 && tempResult == false){
 				tempResult = true;
-			} else if (classe[i] != 0 && tempResult == true){
+			} else if (classe[i] != 0 && tempResult == true){ //if there are two values or more, we go deeper in the tree
 				return false;
 			}
 		}
